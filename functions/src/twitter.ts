@@ -51,7 +51,7 @@ function getDate(text: string): Date | null {
 
 function isActive(text: string): boolean | null {
   const neg = text.indexOf('rules are suspended') !== -1 || text.indexOf('rules will be suspended') !== -1;
-  const pos = text.indexOf('rules will be in effect') !== -1 || text.indexOf('rules are in effect today') !== -1;
+  const pos = text.indexOf('rules will be in effect') !== -1 || text.indexOf('rules are in effect') !== -1;
   return neg || pos ? pos : null;
 }
 

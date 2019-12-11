@@ -1,7 +1,8 @@
 {
   "name": "paras",
   "integrations": {
-    "cordova": {}
+    "cordova": {},
+    "capacitor": {}
   },
   "type": "angular"
 }

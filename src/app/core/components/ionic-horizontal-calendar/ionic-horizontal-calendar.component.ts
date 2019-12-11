@@ -92,7 +92,7 @@ export class IonicHorizontalCalendarComponent implements OnInit {
 
   /** Callback to select days that should be excluded from selection. */
   @Input() daysToExclude = (day: CalendarDay) =>
-    day.date.getDay() === 6 || day.date.getDay() === 0 || moment(day.date).isBefore(this.minDate);
+    day.date.getDay() === 6 || day.date.getDay() === 0 || moment(day.date).isBefore(this.minDate)
 
   /** Min date allowed. */
   @Input() minDate: moment.MomentInput;
@@ -119,7 +119,7 @@ export class IonicHorizontalCalendarComponent implements OnInit {
   @Input() displayMode: 'daily' | 'weekly' = 'daily';
   /* tslint:enable:disable:member-ordering */
 
-  constructor(private cdRef: ChangeDetectorRef, private elementRef: ElementRef) {}
+  constructor(private cdRef: ChangeDetectorRef, private elementRef: ElementRef) { }
 
   ngOnInit(): void {
     if (this.displayMode === 'weekly') {

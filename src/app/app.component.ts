@@ -24,9 +24,11 @@ export class AppComponent {
 
   initializeApp() {
     this.platform.ready().then(() => {
-      StatusBar.setStyle({ style: StatusBarStyle.Light });
-      this.fcm.getPermission().subscribe();
-      this.fcm.listenToMessages().subscribe();
+      if (this.platform.is('cordova')) {
+        StatusBar.setStyle({ style: StatusBarStyle.Light });
+        this.fcm.getPermission().subscribe();
+        this.fcm.listenToMessages().subscribe();
+      }
     });
   }
 }

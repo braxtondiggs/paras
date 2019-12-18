@@ -16,5 +16,4 @@ export class AuthGuard implements CanActivate {
     if (!isLoggedIn) { await this.auth.anonymousLogin(); }
     return true;
   }
-
 }

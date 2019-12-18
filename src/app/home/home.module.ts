@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { IonicHorizontalCalendarComponent } from '../core/components/ionic-horizontal-calendar';
+import { HorizontalCalendarComponent } from '../core/components/horizontal-calendar/horizontal-calendar.component';
 import { HomePage } from './home.page';
 
 @NgModule({
@@ -19,6 +20,6 @@ import { HomePage } from './home.page';
       }
     ])
   ],
-  declarations: [HomePage, IonicHorizontalCalendarComponent]
+  declarations: [HomePage, HorizontalCalendarComponent]
 })
-export class HomePageModule {}
+export class HomePageModule { }

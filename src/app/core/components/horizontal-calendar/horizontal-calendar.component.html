@@ -1,0 +1,6 @@
+<ion-slides [options]="slideOpts" (ionSlideReachEnd)="slideEnd()" (ionSlideReachStart)="slideStart()">
+  <ion-slide *ngFor="let item of items">
+    <h2>{{item.day.num}}</h2>
+    <h4>{{item.day.short}}</h4>
+  </ion-slide>
+</ion-slides>

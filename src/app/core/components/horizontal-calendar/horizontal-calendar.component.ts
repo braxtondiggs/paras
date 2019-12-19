@@ -11,6 +11,7 @@ import { Calendar, Feed } from '../../interface';
 })
 export class HorizontalCalendarComponent implements OnInit {
   @ViewChild('slider', { static: false }) slider: IonSlides;
+  selected: Feed;
   feed: Feed[];
   active: Calendar;
   items: Calendar[] = [];
@@ -23,7 +24,7 @@ export class HorizontalCalendarComponent implements OnInit {
 
   ngOnInit() {
     this.items = this.getDatesBetween();
-    this.active = this.items[2];
+    this.active = this.items[this.slideOpts.initialSlide];
     this.getData();
   }
 
@@ -40,12 +41,16 @@ export class HorizontalCalendarComponent implements OnInit {
 
   hasNotice(calendar: Calendar, feed: Feed[]): boolean {
     if (feed) {
-      const item = first(orderBy(filter(feed,
-        (o => moment(o.date.toDate()).isSame(calendar.date, 'day'))),
-        (o => o.date.seconds), ['asc']));
+      const item = this.getSelectedItem(calendar, feed);
       return item ? !item.active : false;
     }
     return false;
+  }
+
+  private getSelectedItem(calendar: Calendar, feed: Feed[]): Feed {
+    return first(orderBy(filter(feed,
+      (o => moment(o.date.toDate()).isSame(calendar.date, 'day'))),
+      (o => o.date.seconds), ['asc']));
   }
 
   private async slideEnd() {
@@ -80,7 +85,10 @@ export class HorizontalCalendarComponent implements OnInit {
       ref
         .where('date', '>=', start.date)
         .where('date', '<', end.date))
-      .subscribe((feed) => this.feed = feed);
+      .subscribe((feed) => {
+        this.selected = this.getSelectedItem(this.active, feed);
+        this.feed = feed;
+      });
   }
 
   private getCalenderFormat(date: moment.Moment): Calendar {

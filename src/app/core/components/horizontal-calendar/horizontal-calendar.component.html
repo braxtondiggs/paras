@@ -1,16 +1,25 @@
 <div class="container">
-  <div class="month" *ngIf="active">{{active.month.long}}</div>
-  <ion-slides #slider [options]="slideOpts" (ionSlideDidChange)="onSlideChange()">
-    <ion-slide *ngFor="let item of items; let i = index" class="ion-activatable" (click)="slider.slideTo(i)" [ngClass]="{'active': active.text === item.text, 'notice': hasNotice(item, feed)}">
-      <h2 class="day-num">{{item.day.num}}</h2>
-      <h4 class="day-short">{{item.day.short}}</h4>
-      <ion-ripple-effect></ion-ripple-effect>
-    </ion-slide>
-  </ion-slides>
-  <ion-button fill="clear" class="end action-btn" (click)="slider.slideNext()">
-    <ion-icon slot="icon-only" name="arrow-forward"></ion-icon>
-  </ion-button>
-  <ion-button fill="clear" class="start action-btn" (click)="slider.slidePrev()">
-    <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-  </ion-button>
+  <div class="horizontal-container">
+    <div class="month" *ngIf="active">{{active.month.long}}</div>
+    <ion-slides #slider [options]="slideOpts" (ionSlideDidChange)="onSlideChange()">
+      <ion-slide *ngFor="let item of items; let i = index" class="ion-activatable" (click)="slider.slideTo(i)" [ngClass]="{'active': active.text === item.text, 'notice': hasNotice(item, feed)}">
+        <h2 class="day-num">{{item.day.num}}</h2>
+        <h4 class="day-short">{{item.day.short}}</h4>
+        <ion-ripple-effect></ion-ripple-effect>
+      </ion-slide>
+    </ion-slides>
+    <ion-button fill="clear" class="end action-btn" (click)="slider.slideNext()">
+      <ion-icon slot="icon-only" name="arrow-forward"></ion-icon>
+    </ion-button>
+    <ion-button fill="clear" class="start action-btn" (click)="slider.slidePrev()">
+      <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+    </ion-button>
+  </div>
+  <div class="card-container">
+    <ion-card>
+      <ion-card-content *ngIf="selected">
+        {{selected.text}}
+      </ion-card-content>
+    </ion-card>
+  </div>
 </div>

@@ -1,6 +1,15 @@
-<ion-slides [options]="slideOpts" (ionSlideReachEnd)="slideEnd()" (ionSlideReachStart)="slideStart()">
-  <ion-slide *ngFor="let item of items">
-    <h2>{{item.day.num}}</h2>
-    <h4>{{item.day.short}}</h4>
-  </ion-slide>
-</ion-slides>
+<div class="container">
+  <div class="month" *ngIf="active">{{active.month.long}}</div>
+  <ion-slides #slider [options]="slideOpts" (ionSlideReachEnd)="slideEnd()" (ionSlideReachStart)="slideStart()" (ionSlideDidChange)="onSlideChange()">
+    <ion-slide *ngFor="let item of items" [ngClass]="{'active': active.text === item.text, 'notice': hasNotice(item, feed)}">
+      <h2 class="day-num">{{item.day.num}}</h2>
+      <h4 class="day-short">{{item.day.short}}</h4>
+    </ion-slide>
+  </ion-slides>
+  <ion-button fill="clear" class="end action-btn" (click)="slider.slideNext()">
+    <ion-icon slot="icon-only" name="arrow-forward"></ion-icon>
+  </ion-button>
+  <ion-button fill="clear" class="start action-btn" (click)="slider.slidePrev()">
+    <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+  </ion-button>
+</div>

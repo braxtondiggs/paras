@@ -1,4 +1,55 @@
-.swiper-slide {
-  border: 1px solid black;
-  height: 80px;
+$main-color: #d7a150;
+$secondary-color: #283271;
+
+.container {
+  position: relative;
+
+  .swiper-slide {
+    border: 1px solid black;
+    height: 80px;
+
+    &.active .day-short {
+      transition: all 0.3s cubic-bezier(0.000, 0.000, 0.230, 1);
+      background-position: 0%;
+    }
+
+    .day-short {
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      background-image: linear-gradient(to right, $secondary-color, $secondary-color 50%, $main-color 50%);
+      background-position: 100%;
+      background-size: 200% 100%;
+      color: $main-color;
+      text-decoration: none;
+    }
+
+    &.notice {
+      background-color: red;
+      border-radius: 50%;
+      bottom: 16px;
+      content: '';
+      display: block;
+      left: 50%;
+      position: absolute;
+      transform: translate(-50%, 0);
+    }
+  }
+
+  .swiper-container {
+    margin: 0 40px;
+  }
+
+  .action-btn {
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+
+    &.start {
+      left: 0;
+    }
+
+    &.end {
+      right: 0;
+    }
+  }
 }

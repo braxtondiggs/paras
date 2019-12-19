@@ -9,7 +9,7 @@ $secondary-color: #283271;
     height: 80px;
 
     &.active .day-short {
-      transition: all 0.3s cubic-bezier(0.000, 0.000, 0.230, 1);
+      transition: all 0.3s cubic-bezier(0, 0, 0.23, 1);
       background-position: 0%;
     }
 
@@ -23,15 +23,17 @@ $secondary-color: #283271;
       text-decoration: none;
     }
 
-    &.notice {
+    &.notice::after {
       background-color: red;
       border-radius: 50%;
-      bottom: 16px;
+      bottom: 8px;
       content: '';
       display: block;
+      height: 8px;
       left: 50%;
       position: absolute;
       transform: translate(-50%, 0);
+      width: 8px;
     }
   }
 

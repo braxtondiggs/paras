@@ -15,35 +15,50 @@ export class HorizontalCalendarComponent implements OnInit {
   active: Calendar;
   items: Calendar[] = [];
   slideOpts = {
-    slidesPerView: 5,
-    initialSlide: 2
+    centeredSlides: true,
+    initialSlide: 2,
+    slidesPerView: 5
   };
   constructor(private db: DbService) { }
 
   ngOnInit() {
     this.items = this.getDatesBetween();
-    const index = Math.round(this.items.length / 2);
-    this.active = this.items[index];
+    this.active = this.items[2];
     this.getData();
   }
 
   async onSlideChange() {
     const index = await this.slider.getActiveIndex();
-    this.active = this.items[index + 2];
+    if (this.items.length - 2 <= index) {
+      await this.slideEnd();
+    } else if (index === 1) {
+      await this.slideStart();
+    }
+    this.active = this.items[index];
+    this.getData();
   }
 
-  slideEnd() {
+  hasNotice(calendar: Calendar, feed: Feed[]): boolean {
+    if (feed) {
+      const item = first(orderBy(filter(feed,
+        (o => moment(o.date.toDate()).isSame(calendar.date, 'day'))),
+        (o => o.date.seconds), ['asc']));
+      return item ? !item.active : false;
+    }
+    return false;
+  }
+
+  private async slideEnd() {
     const date = last(this.items);
     const end = moment(date.text).add(10, 'days');
     this.items = concat(this.items, this.getDatesBetween(moment(date.text).add(1, 'days'), end));
   }
 
-  async slideStart() {
+  private async slideStart() {
     const date = first(this.items);
+    await this.slider.slideTo(6, 0);
     const start = moment(date.text).subtract(5, 'days');
     this.items = concat(this.getDatesBetween(start, moment(date.text).subtract(1, 'days')));
-    await this.slider.update();
-    setTimeout(async () => await this.slider.slideTo(5, 100), 0);
   }
 
   private getDatesBetween(startDate?: moment.Moment, endDate?: moment.Moment): Calendar[] {
@@ -66,16 +81,6 @@ export class HorizontalCalendarComponent implements OnInit {
         .where('date', '>=', start.date)
         .where('date', '<', end.date))
       .subscribe((feed) => this.feed = feed);
-  }
-
-  hasNotice(calendar: Calendar, feed: Feed[]): boolean {
-    if (feed) {
-      const item = first(orderBy(filter(feed,
-        (o => moment(o.date.toDate()).isSame(calendar.date, 'day'))),
-        (o => o.date.seconds), ['asc']));
-      return item ? !item.active : false;
-    }
-    return false;
   }
 
   private getCalenderFormat(date: moment.Moment): Calendar {

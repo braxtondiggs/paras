@@ -1,9 +1,10 @@
 <div class="container">
   <div class="month" *ngIf="active">{{active.month.long}}</div>
-  <ion-slides #slider [options]="slideOpts" (ionSlideReachEnd)="slideEnd()" (ionSlideReachStart)="slideStart()" (ionSlideDidChange)="onSlideChange()">
-    <ion-slide *ngFor="let item of items" [ngClass]="{'active': active.text === item.text, 'notice': hasNotice(item, feed)}">
+  <ion-slides #slider [options]="slideOpts" (ionSlideDidChange)="onSlideChange()">
+    <ion-slide *ngFor="let item of items; let i = index" class="ion-activatable" (click)="slider.slideTo(i)" [ngClass]="{'active': active.text === item.text, 'notice': hasNotice(item, feed)}">
       <h2 class="day-num">{{item.day.num}}</h2>
       <h4 class="day-short">{{item.day.short}}</h4>
+      <ion-ripple-effect></ion-ripple-effect>
     </ion-slide>
   </ion-slides>
   <ion-button fill="clear" class="end action-btn" (click)="slider.slideNext()">

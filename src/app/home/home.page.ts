@@ -1,9 +1,9 @@
 import { Component, ViewChild, AfterViewInit } from '@angular/core';
 import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, CalendarComponent } from 'ion2-calendar';
-import * as moment from 'moment';
 import { DbService } from '../core/services';
 import { map } from 'rxjs/operators';
 import { Feed } from '../core/interface';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-home',

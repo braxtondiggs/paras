@@ -6,6 +6,47 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-
+<ion-content fullscreen>
+  <form [formGroup]="settingsForm">
+    <ion-list>
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h2>Current Day Notification</h2>
+          <ion-note>Get notified about alternate side parking</ion-note>
+        </ion-label>
+        <ion-select formControlName="today">
+          <ion-select-option value="none">None</ion-select-option>
+          <ion-select-option value="immediately">Immediately</ion-select-option>
+          <ion-select-option value="custom">Custom</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h2>Custom Time</h2>
+          <ion-note>The time you would like to receive a notification</ion-note>
+        </ion-label>
+        <ion-datetime formControlName="todayCustom" display-format="h:mm A" picker-format="h:mm A"></ion-datetime>
+      </ion-item>
+    </ion-list>
+    <ion-list>
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h2>Next Day Notification</h2>
+          <ion-note>Get notified next day about parking</ion-note>
+        </ion-label>
+        <ion-select formControlName="nextDay">
+          <ion-select-option value="none">None</ion-select-option>
+          <ion-select-option value="immediately">Immediately</ion-select-option>
+          <ion-select-option value="custom">Custom</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h2>Custom Time</h2>
+          <ion-note>The time you would like to receive a notification</ion-note>
+        </ion-label>
+        <ion-datetime formControlName="nextDayCustom" display-format="h:mm A" picker-format="h:mm A"></ion-datetime>
+      </ion-item>
+    </ion-list>
+  </form>
 </ion-content>

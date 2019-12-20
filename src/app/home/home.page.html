@@ -16,7 +16,7 @@
       <horizontal-calendar></horizontal-calendar>
     </ion-slide>
     <ion-slide>
-      <ion-calendar [(ngModel)]="date" (change)="onChange($event)" [type]="type" [format]="'YYYY-MM-DD'" [options]="calendarOpts"></ion-calendar>
+      <ion-calendar #calendar [(ngModel)]="date" (change)="onSelect($event)" (monthChange)="onMonthChange($event)" type="string" [format]="'YYYY-MM-DD'" [options]="calendarOpts"></ion-calendar>
     </ion-slide>
   </ion-slides>
 </ion-content>

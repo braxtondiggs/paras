@@ -4,10 +4,12 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HorizontalCalendarComponent } from '../core/components/horizontal-calendar/horizontal-calendar.component';
+import { CalendarModule } from 'ion2-calendar';
 import { HomePage } from './home.page';
 
 @NgModule({
   imports: [
+    CalendarModule,
     CommonModule,
     FormsModule,
     IonicModule,

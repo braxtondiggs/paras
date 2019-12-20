@@ -34,7 +34,7 @@ export class FcmService {
   listenToMessages() {
     let messages$: Observable<any>;
     if (this.platform.is('cordova')) {
-      messages$ = this.firebase.onMessageReceived()
+      messages$ = this.firebase.onMessageReceived();
     } else {
       messages$ = this.afMessaging.messages;
     }

@@ -8,45 +8,45 @@
 </ion-header>
 <ion-content fullscreen>
   <form [formGroup]="settingsForm">
-    <ion-list>
-      <ion-item>
+    <ion-card>
+      <ion-item lines="none">
         <ion-label class="ion-text-wrap">
           <h2>Current Day Notification</h2>
-          <ion-note>Get notified about alternate side parking</ion-note>
+          <ion-note>{{ getNotificationMessage('today', this.settingsForm.value.today) }}</ion-note>
         </ion-label>
-        <ion-select formControlName="today">
+        <ion-select formControlName="today" [interfaceOptions]="{header: 'Current Day Notification'}">
           <ion-select-option value="none">None</ion-select-option>
           <ion-select-option value="immediately">Immediately</ion-select-option>
           <ion-select-option value="custom">Custom</ion-select-option>
         </ion-select>
       </ion-item>
-      <ion-item>
+      <ion-item [hidden]="true">
         <ion-label class="ion-text-wrap">
           <h2>Custom Time</h2>
           <ion-note>The time you would like to receive a notification</ion-note>
         </ion-label>
-        <ion-datetime formControlName="todayCustom" display-format="h:mm A" picker-format="h:mm A"></ion-datetime>
+        <ion-datetime #todayDatePicker formControlName="todayCustom" disp3lay-format="h:mm A" picker-format="h:mm A"></ion-datetime>
       </ion-item>
-    </ion-list>
-    <ion-list>
-      <ion-item>
+    </ion-card>
+    <ion-card>
+      <ion-item lines="none">
         <ion-label class="ion-text-wrap">
           <h2>Next Day Notification</h2>
-          <ion-note>Get notified next day about parking</ion-note>
+          <ion-note>{{ getNotificationMessage('nextday', this.settingsForm.value.nextDay) }}</ion-note>
         </ion-label>
-        <ion-select formControlName="nextDay">
+        <ion-select formControlName="nextDay" [interfaceOptions]="{header: 'Next Day Notification'}">
           <ion-select-option value="none">None</ion-select-option>
           <ion-select-option value="immediately">Immediately</ion-select-option>
           <ion-select-option value="custom">Custom</ion-select-option>
         </ion-select>
       </ion-item>
-      <ion-item>
+      <ion-item [hidden]="true">
         <ion-label class="ion-text-wrap">
           <h2>Custom Time</h2>
           <ion-note>The time you would like to receive a notification</ion-note>
         </ion-label>
-        <ion-datetime formControlName="nextDayCustom" display-format="h:mm A" picker-format="h:mm A"></ion-datetime>
+        <ion-datetime #nextdayDatePicker formControlName="nextDayCustom" display-format="h:mm A" picker-format="h:mm A"></ion-datetime>
       </ion-item>
-    </ion-list>
+    </ion-card>
   </form>
 </ion-content>

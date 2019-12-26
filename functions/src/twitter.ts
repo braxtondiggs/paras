@@ -1,11 +1,9 @@
-import * as admin from 'firebase-admin';
 import * as dayjs from 'dayjs';
+import db from './db';
 import * as functions from 'firebase-functions';
 import { findIndex, isNull, intersection, range } from 'lodash';
 import * as Twitter from 'twitter';
-
-admin.initializeApp();
-const db = admin.firestore();
+import { FCM } from './fcm';
 
 const client = new Twitter({
   consumer_key: 'ooP4LLRRJ51r454e3j7bVHc04',
@@ -17,25 +15,26 @@ const client = new Twitter({
 export async function getNYFeed(_request: functions.https.Request, response: functions.Response) {
   const tweets = await client.get('statuses/user_timeline', { screen_name: 'NYCASP', count: 1 });
   const promise: any[] = [];
+  let data;
   tweets.forEach(async (tweet: Twitter.ResponseData) => {
     const active = isActive(tweet.text);
     const date = getDate(tweet.text);
     const metered = isMetered(tweet.text.toLowerCase());
     if (!isNull(date) && !isNull(active)) {
-      promise.push(
-        db.doc(`feed/${tweet.id}`).set({
-          active,
-          created: dayjs(tweet.created_at).toDate(),
-          date,
-          id: tweet.id,
-          metered,
-          text: tweet.text,
-          type: 'NYC'
-        })
-      );
+      data = {
+        active,
+        created: dayjs(tweet.created_at).toDate(),
+        date,
+        id: tweet.id,
+        metered,
+        text: tweet.text,
+        type: 'NYC'
+      };
+      promise.push(db.doc(`feed/${tweet.id}`).set(data));
     }
   });
   await Promise.all(promise);
+  await FCM('scrape', data);
   return response.status(200).send('Ok');
 }
 

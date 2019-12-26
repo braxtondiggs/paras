@@ -17,18 +17,20 @@ export class FcmService {
     private platform: Platform
   ) { }
 
-  getPermission(): Observable<string> {
-    let token$: Observable<string>;
-    if (this.platform.is('cordova')) {
-      token$ = from(this.getPermissionNative());
-    } else {
-      token$ = this.getPermissionWeb();
-    }
-    return token$.pipe(
-      tap(token => {
+  getPermission(): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      console.log('sup');
+      // this.firebase.grantPermission().then(() => {
+      this.firebase.getToken().then((token) => {
+        console.log('token');
+        console.log(token);
         this.token = token;
-      })
-    );
+        return resolve();
+      }, (error) => {
+        console.log(error);
+      });
+      // });
+    });
   }
 
   listenToMessages() {
@@ -39,20 +41,6 @@ export class FcmService {
       messages$ = this.afMessaging.messages;
     }
     return messages$.pipe((tap(v => this.showMessages(v))));
-  }
-
-  private getPermissionWeb(): Observable<string> {
-    return this.afMessaging.requestToken;
-  }
-
-  private async getPermissionNative() {
-    let token: string;
-    if (this.platform.is('ios')) {
-      await this.firebase.grantPermission();
-    }
-
-    token = await this.firebase.getToken();
-    return token;
   }
 
   private showMessages(payload: any) {

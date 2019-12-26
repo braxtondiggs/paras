@@ -1,8 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { DbService, AuthService } from '../core/services';
+import { DbService, AuthService, FcmService } from '../core/services';
 import { Setting } from '../core/interface';
 import * as moment from 'moment';
+import { identity, pickBy } from 'lodash-es';
 import { skip, distinctUntilChanged, take } from 'rxjs/operators';
 import { ToastController, IonDatetime } from '@ionic/angular';
 @Component({
@@ -20,6 +21,7 @@ export class SettingsPage implements OnInit {
     fb: FormBuilder,
     private db: DbService,
     private auth: AuthService,
+    private fcm: FcmService,
     private toast: ToastController) {
     this.settings = {
       today: 'none',
@@ -35,8 +37,8 @@ export class SettingsPage implements OnInit {
     this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe((settings: Setting) => {
       settings = {
         ...settings,
-        todayCustom: moment(settings.todayCustom, 'h:mm A').format(),
-        nextDayCustom: moment(settings.nextDayCustom, 'h:mm A').format()
+        todayCustom: moment.utc(settings.todayCustom, 'h:mm A z').local().format(),
+        nextDayCustom: moment.utc(settings.nextDayCustom, 'h:mm A z').local().format()
       };
       this.settingsForm.patchValue({ ...this.settings, ...settings });
     });
@@ -45,7 +47,7 @@ export class SettingsPage implements OnInit {
       if (today === 'custom') {
         await this.today.open();
         this.today.ionChange.subscribe((data: CustomEvent) =>
-          this.save({ today, todayCustom: moment(data.detail.value).format('h:mm A') })
+          this.save({ today, todayCustom: moment.utc(data.detail.value, 'YYYY-MM-DD HH:mmZ').format('h:mm A z') })
         );
         this.today.ionCancel.subscribe(() => this.settingsForm.controls.today.patchValue('none'));
       } else {
@@ -57,7 +59,7 @@ export class SettingsPage implements OnInit {
       if (nextDay === 'custom') {
         await this.nextday.open();
         this.nextday.ionChange.subscribe((data: CustomEvent) =>
-          this.save({ nextDay, nextDayCustom: moment(data.detail.value).format('h:mm A') })
+          this.save({ nextDay, nextDayCustom: moment.utc(data.detail.value, 'YYYY-MM-DD HH:mmZ').format('h:mm A z') })
         );
         this.nextday.ionCancel.subscribe(() => this.settingsForm.controls.nextDay.reset());
         return;
@@ -69,6 +71,8 @@ export class SettingsPage implements OnInit {
 
   private save(data: Setting): void {
     let t: HTMLIonToastElement;
+    data = pickBy({ ...data, token: this.fcm.token }, identity);
+    console.log(data);
     this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
       t = await this.toast.create({
         color: 'dark',

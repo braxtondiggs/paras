@@ -1,13 +1,7 @@
 import { Component } from '@angular/core';
 import { FcmService } from './core/services';
 import { Platform } from '@ionic/angular';
-
-import {
-  Plugins,
-  StatusBarStyle,
-} from '@capacitor/core';
-
-const { StatusBar } = Plugins;
+import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 @Component({
   selector: 'app-root',
@@ -17,19 +11,19 @@ const { StatusBar } = Plugins;
 export class AppComponent {
   constructor(
     private fcm: FcmService,
-    private platform: Platform
+    private platform: Platform,
+    private statusBar: StatusBar
   ) {
     this.initializeApp();
   }
 
-  initializeApp() {
-    this.platform.ready().then(() => {
-      if (this.platform.is('cordova')) {
-        StatusBar.setStyle({ style: StatusBarStyle.Light });
-        this.fcm.getPermission().then(() => {
-          this.fcm.listenToMessages().subscribe();
-        });
-      }
-    });
+  async initializeApp() {
+    await this.platform.ready();
+    if (this.platform.is('cordova')) {
+      this.statusBar.styleLightContent();
+      this.fcm.getPermission().subscribe(() => {
+        this.fcm.listenToMessages().subscribe();
+      });
+    }
   }
 }

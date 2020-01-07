@@ -9,7 +9,9 @@
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "rebuild": "rpm run nuke && npm i && ionic cordova prepare android",
+    "nuke": "rm -rf node_modules/ platforms/ plugins/ www/ package-lock.json"
   },
   "private": true,
   "dependencies": {
@@ -20,21 +22,23 @@
     "@angular/platform-browser": "~8.1.2",
     "@angular/platform-browser-dynamic": "~8.1.2",
     "@angular/router": "~8.1.2",
-    "@capacitor/android": "^1.4.0",
-    "@capacitor/core": "1.4.0",
-    "@ionic-native/core": "^5.0.0",
-    "@ionic-native/firebase-x": "^5.18.0",
+    "@ionic-native/core": "^5.19.0",
+    "@ionic-native/firebase-x": "^5.19.1",
+    "@ionic-native/status-bar": "^5.19.1",
     "@ionic/angular": "^4.11.7",
     "cordova-android": "^8.1.0",
+    "cordova-custom-config": "^5.1.0",
     "cordova-plugin-androidx": "^1.0.2",
     "cordova-plugin-androidx-adapter": "^1.1.0",
     "cordova-plugin-firebasex": "^7.0.1",
+    "cordova-plugin-statusbar": "^2.4.3",
+    "cordova-plugin-whitelist": "^1.3.3",
     "core-js": "^2.5.4",
-    "firebase": "^7.6.0",
+    "firebase": "^7.6.1",
     "ion2-calendar": "^3.0.0-rc.0",
     "lodash-es": "^4.17.15",
     "moment": "^2.24.0",
-    "rxjs": "~6.5.1",
+    "rxjs": "^6.5.4",
     "tslib": "^1.9.0",
     "zone.js": "~0.9.1"
   },
@@ -47,7 +51,6 @@
     "@angular/compiler": "~8.1.2",
     "@angular/compiler-cli": "~8.1.2",
     "@angular/language-service": "~8.1.2",
-    "@capacitor/cli": "1.4.0",
     "@ionic/angular-toolkit": "^2.1.1",
     "@types/jasmine": "~3.3.8",
     "@types/jasminewd2": "~2.0.3",
@@ -61,7 +64,7 @@
     "karma-chrome-launcher": "~2.2.0",
     "karma-coverage-istanbul-reporter": "~2.0.1",
     "karma-jasmine": "~2.0.1",
-    "karma-jasmine-html-reporter": "^1.4.0",
+    "karma-jasmine-html-reporter": "^1.5.1",
     "protractor": "~5.4.0",
     "ts-node": "~7.0.0",
     "tslint": "~5.15.0",
@@ -70,12 +73,28 @@
   "description": "An Ionic project",
   "cordova": {
     "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-custom-config": {},
       "cordova-plugin-ionic-webview": {
         "ANDROID_SUPPORT_ANNOTATIONS_VERSION": "27.+"
       },
-      "cordova-plugin-firebasex": {},
+      "cordova-plugin-firebasex": {
+        "FIREBASE_ANALYTICS_COLLECTION_ENABLED": "true",
+        "FIREBASE_PERFORMANCE_COLLECTION_ENABLED": "true",
+        "FIREBASE_CRASHLYTICS_COLLECTION_ENABLED": "true",
+        "ANDROID_ICON_ACCENT": "#FF00FFFF",
+        "ANDROID_PLAY_SERVICES_TAGMANAGER_VERSION": "17.0.0",
+        "ANDROID_FIREBASE_ANALYTICS_VERSION": "17.2.1",
+        "ANDROID_FIREBASE_MESSAGING_VERSION": "20.0.0",
+        "ANDROID_FIREBASE_CONFIG_VERSION": "19.0.3",
+        "ANDROID_FIREBASE_PERF_VERSION": "19.0.1",
+        "ANDROID_FIREBASE_AUTH_VERSION": "19.1.0",
+        "ANDROID_CRASHLYTICS_VERSION": "2.10.1",
+        "ANDROID_CRASHLYTICS_NDK_VERSION": "2.1.1"
+      },
       "cordova-plugin-androidx": {},
-      "cordova-plugin-androidx-adapter": {}
+      "cordova-plugin-androidx-adapter": {},
+      "cordova-plugin-statusbar": {}
     },
     "platforms": [
       "android"

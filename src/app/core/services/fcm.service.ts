@@ -5,8 +5,8 @@ import { Platform } from '@ionic/angular';
 import { from, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { DbService } from './db.service';
-import * as moment from 'moment';
 import { AuthService } from './auth.service';
+import * as moment from 'moment';
 
 @Injectable({
   providedIn: 'root'

@@ -1,7 +1,7 @@
 import * as dayjs from 'dayjs';
 import db from './db';
 import * as functions from 'firebase-functions';
-import { findIndex, isNull, intersection, range } from 'lodash';
+import { capitalize, findIndex, isNull, intersection, range, replace } from 'lodash';
 import * as Twitter from 'twitter';
 import { FCM } from './fcm';
 
@@ -27,7 +27,7 @@ export async function getNYFeed(_request: functions.https.Request, response: fun
         date,
         id: tweet.id,
         metered,
-        text: tweet.text,
+        text: formatText(tweet.text),
         type: 'NYC'
       };
       promise.push(db.doc(`feed/${tweet.id}`).set(data));
@@ -58,4 +58,10 @@ function isMetered(text: string): boolean {
   const neg = text.indexOf('parking meters are not in effect') !== -1 || text.indexOf('parking meters will not be in effect') !== -1;
   const pos = text.indexOf('parking meters will remain in effect') !== -1 || text.indexOf('parking meters are in effect') !== -1;
   return neg || pos ? pos : true;
+}
+
+function formatText(text: string): string {
+  let output = replace(text, '#NYCASP', '');
+  output = capitalize(output);
+  return output;
 }

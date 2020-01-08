@@ -39,6 +39,12 @@ export async function getNYFeed(_request: functions.https.Request, response: fun
   return response.status(200).send('Ok');
 }
 
+export async function getTweetReplies(request: functions.https.Request, response: functions.Response) {
+  console.log(request.params[0]);
+  const tweets = await client.get('search/tweets', { id: '1214887049930649604', q: 'to:@NYCASP', tweet_mode: 'extended', until: 'todo: day before' });
+  return response.send(tweets);
+}
+
 function getDate(text: string): Date | null {
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const days = range(1, 32).map(v => v.toString());
@@ -69,5 +75,5 @@ function formatText(text: string): string {
 
 function getReason(text: string): string | null {
   const output = text.split('for ').pop()?.split('.');
-  return output ? upperFirst(output[0]) : null;
+  return output && text.includes('for ') ? upperFirst(output[0]) : null;
 }

@@ -23,7 +23,7 @@ export async function getNYCalender() {
       });
     } else {
       const id = dayjs(data[0]).year(dayjs().year()).format('MMDDYYYY');
-      promise.push(db.doc(`feed/${id}`).set(convertData(id, dayjs(data[0]), data[1])));
+      promise.push(db.doc(`feed/${id}`).set(convertData(id, dayjs(data[0]).year(dayjs().year()), data[1])));
     }
   });
   return Promise.all(promise);
@@ -43,7 +43,7 @@ function convertData(id: string, date: dayjs.Dayjs, text: string) {
   return {
     active: false,
     created: dayjs().toDate(),
-    date: date.toDate(),
+    date: date.add(1, 'day').toDate(),
     id,
     metered: true,
     text: `Rules are suspended today, ${date.format('MMMM D')}.`,

@@ -1,7 +1,7 @@
 import * as dayjs from 'dayjs';
 import db from './db';
 import * as functions from 'firebase-functions';
-import { capitalize, findIndex, isNull, intersection, range, replace } from 'lodash';
+import { findIndex, isNull, intersection, range, replace, upperFirst } from 'lodash';
 import * as Twitter from 'twitter';
 import { FCM } from './fcm';
 
@@ -27,6 +27,7 @@ export async function getNYFeed(_request: functions.https.Request, response: fun
         date,
         id: tweet.id,
         metered,
+        reason: getReason(tweet.text),
         text: formatText(tweet.text),
         type: 'NYC'
       };
@@ -61,7 +62,12 @@ function isMetered(text: string): boolean {
 }
 
 function formatText(text: string): string {
-  let output = replace(text, '#NYCASP', '');
-  output = capitalize(output);
+  let output = replace(text, '#NYCASP ', '');
+  output = upperFirst(output);
   return output;
+}
+
+function getReason(text: string): string | null {
+  const output = text.split('for ').pop()?.split('.');
+  return output ? upperFirst(output[0]) : null;
 }

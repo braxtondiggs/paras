@@ -4,7 +4,7 @@ import * as dayjs from 'dayjs';
 
 const payload: admin.messaging.MessagingPayload = {
   notification: {
-    title: 'Alternate Side Parking Update'
+    title: 'Alternate Side Parking'
   }
 };
 export async function FCM(type?: string, tweet?: any) {
@@ -22,8 +22,8 @@ async function getImmediateNotifications(tweet: any) {
   const tokens: string[] = [];
   query.forEach(snapshot => promise.push(snapshot));
   for (const snapshot of promise) {
-    const { nextDay, text, today, token } = snapshot.data();
-    if (payload.notification) payload.notification.body = text;
+    const { nextDay, today, token } = snapshot.data();
+    if (payload.notification) payload.notification.body = tweet.text;
     if ((today === 'immediately' && isToday) || (nextDay === 'immediately' && !isToday)) {
       tokens.push(token);
     }
@@ -41,15 +41,17 @@ async function getCustomNotifications() {
   for (const snapshot of promise) {
     const { date, text } = snapshot.data();
     if (payload.notification) payload.notification.body = text;
-    isToday = dayjs(date).isSame(dayjs(), 'day');
-    isActive = dayjs(date).isAfter(dayjs()) && dayjs(date).isBefore(dayjs().add(15, 'minute'));
+    isToday = dayjs(date.toDate()).isSame(dayjs(), 'day');
   }
   promise = []; // reset
   const query = await db.collection('notifications').where(isToday ? 'today' : 'nextDay', '==', 'custom').get();
   const tokens: string[] = [];
   query.forEach(snapshot => promise.push(snapshot));
   for (const snapshot of promise) {
-    const { nextDay, today, token } = snapshot.data();
+    const { nextDay, nextDayCustom, today, todayCustom, token } = snapshot.data();
+    let date = isToday ? dayjs().format('MM/DD/YYYY') : dayjs().add(1, 'day').format('MM/DD/YYYY');
+    date = isToday ? `${date} ${todayCustom}` : `${date} ${nextDayCustom}`;
+    isActive = dayjs(date).isAfter(dayjs()) && dayjs(date).isBefore(dayjs().add(15, 'minute'));
     if ((today === 'custom' && isToday && isActive) || (nextDay === 'custom' && !isToday && isActive)) {
       tokens.push(token);
     }

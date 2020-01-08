@@ -17,7 +17,7 @@ export class HorizontalCalendarComponent implements OnInit {
   items: Calendar[] = [];
   slideOpts = {
     centeredSlides: true,
-    initialSlide: 2,
+    initialSlide: 4,
     slidesPerView: 5
   };
   constructor(private db: DbService) { }
@@ -32,7 +32,7 @@ export class HorizontalCalendarComponent implements OnInit {
     const index = await this.slider.getActiveIndex();
     if (this.items.length - 2 <= index) {
       await this.slideEnd();
-    } else if (index === 1) {
+    } else if (index <= 1) {
       await this.slideStart();
     }
     this.active = this.items[index];

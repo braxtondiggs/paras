@@ -1,9 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonSlides } from '@ionic/angular';
-import * as moment from 'moment';
 import { concat, filter, first, orderBy, last } from 'lodash-es';
 import { DbService } from '../../services';
 import { Calendar, Feed } from '../../interface';
+import * as moment from 'moment';
 @Component({
   selector: 'horizontal-calendar',
   templateUrl: './horizontal-calendar.component.html',
@@ -11,7 +11,7 @@ import { Calendar, Feed } from '../../interface';
 })
 export class HorizontalCalendarComponent implements OnInit {
   @ViewChild('slider', { static: false }) slider: IonSlides;
-  selected: Feed;
+  selected: Feed | moment.Moment;
   feed: Feed[];
   active: Calendar;
   items: Calendar[] = [];
@@ -86,7 +86,7 @@ export class HorizontalCalendarComponent implements OnInit {
         .where('date', '>=', start.date)
         .where('date', '<', end.date))
       .subscribe((feed) => {
-        this.selected = this.getSelectedItem(this.active, feed);
+        this.selected = this.getSelectedItem(this.active, feed) || moment(this.active.date);
         this.feed = feed;
       });
   }

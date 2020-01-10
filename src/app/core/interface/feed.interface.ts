@@ -6,6 +6,7 @@ export interface Feed {
   date: Timestamp;
   id: number;
   metered: boolean;
+  reason: string;
   text: string;
   type: string;
 }

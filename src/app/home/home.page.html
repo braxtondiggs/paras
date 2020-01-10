@@ -1,7 +1,7 @@
 <ion-header translucent no-border>
   <ion-toolbar>
     <ion-buttons slot="primary">
-      <ion-button (click)="index = !index; slider.slideTo(index ? 0 : 1)">
+      <ion-button (click)="switchCalenderView()">
         <ion-icon slot="icon-only" name="calendar"></ion-icon>
       </ion-button>
       <ion-button [routerLink]="['/settings']">

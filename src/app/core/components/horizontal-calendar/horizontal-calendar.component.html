@@ -15,11 +15,5 @@
       <ion-icon slot="icon-only" name="ios-arrow-back"></ion-icon>
     </ion-button>
   </div>
-  <div class="card-container">
-    <ion-card>
-      <ion-card-content *ngIf="selected">
-        {{selected.text}}
-      </ion-card-content>
-    </ion-card>
-  </div>
+  <app-card-detail [item]="selected" *ngIf="selected"></app-card-detail>
 </div>

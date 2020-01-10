@@ -40,8 +40,8 @@ export async function getNYFeed(_request: functions.https.Request, response: fun
 }
 
 export async function getTweetReplies(request: functions.https.Request, response: functions.Response) {
-  console.log(request.params[0]);
-  const tweets = await client.get('search/tweets', { id: '1214887049930649604', q: 'to:@NYCASP', tweet_mode: 'extended', until: 'todo: day before' });
+  const params = request.url.split('/');
+  const tweets = await client.get('search/tweets', { since_id: params[1], q: 'to:@NYCASP', tweet_mode: 'extended', until: params[2] });
   return response.send(tweets);
 }
 

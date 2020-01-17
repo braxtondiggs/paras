@@ -1,0 +1,23 @@
+ion-card-header {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  height: 32px;
+  justify-content: space-between;
+  padding: 0 16px;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+ion-card-content {
+  padding: 16px 8px;
+  position: relative;
+
+  .updated {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+  }
+}

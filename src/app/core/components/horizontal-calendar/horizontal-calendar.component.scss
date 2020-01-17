@@ -1,16 +1,73 @@
-$main-color: #d7a150;
-$secondary-color: #283271;
+$alert: #f38181;
+$secondary-color: #f67280;
+$card-background: #f6f6f6;
+$card-border: #dbe2ef;
+$card-active-background: #dbe2ef;
+$text-color: #393e46;
+$main-color: darken($card-border, 30%);
 
 .horizontal-container {
   position: relative;
 
-  .swiper-slide {
-    border: 1px solid black;
-    height: 80px;
+  .slider-container {
+    position: relative;
 
-    &.active .day-short {
-      transition: all 0.3s cubic-bezier(0, 0, 0.23, 1);
-      background-position: 0%;
+    .swiper-container {
+      margin: 0 25px;
+    }
+
+    ion-button {
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      transform: translate(0, -50%);
+      --padding-start: 0;
+      --padding-end: 0;
+      --opacity: .6;
+
+      &.start {
+        left: 0;
+      }
+
+      &.end {
+        right: 0;
+      }
+    }
+  }
+
+  .month {
+    color: $text-color;
+    font-size: 24px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .swiper-slide {
+    background-color: $card-background;
+    border-radius: 8px;
+    border: 1px solid $card-border;
+    flex-direction: column;
+    height: 45px;
+    justify-content: center;
+    overflow: hidden;
+
+    &.active {
+      background-color: $card-active-background;
+
+      .day-short {
+        transition: all 0.3s cubic-bezier(0, 0, 0.23, 1);
+        background-position: 0%;
+      }
+    }
+
+    .day-short,
+    .day-num {
+      margin: 0;
+    }
+
+    .day-num {
+      color: $text-color;
     }
 
     .day-short {
@@ -20,38 +77,30 @@ $secondary-color: #283271;
       background-position: 100%;
       background-size: 200% 100%;
       color: $main-color;
+      font-size: 14px;
+      font-weight: normal;
+      margin-top: -6px;
+      margin-bottom: -2px;
       text-decoration: none;
+      text-transform: uppercase;
     }
 
     &.notice::after {
-      background-color: red;
+      background-color: $alert;
       border-radius: 50%;
-      bottom: 8px;
+      bottom: 2px;
       content: '';
       display: block;
-      height: 8px;
+      height: 6px;
       left: 50%;
       position: absolute;
       transform: translate(-50%, 0);
-      width: 8px;
+      width: 6px;
     }
   }
+}
 
-  .swiper-container {
-    margin: 0 40px;
-  }
-
-  .action-btn {
-    position: absolute;
-    top: 50%;
-    transform: translate(0, -50%);
-
-    &.start {
-      left: 0;
-    }
-
-    &.end {
-      right: 0;
-    }
-  }
+app-card-detail {
+  display: block;
+  margin: 16px;
 }

@@ -15,15 +15,16 @@ import * as moment from 'moment';
 })
 export class HomePage implements AfterViewInit {
   index = true; // TODO: Save using storage config
-  date: string;
+  date: string = moment().format();
   items: Feed[];
   slideOpts = {
     allowTouchMove: false,
     initialSlide: this.location.path().includes('calendar') ? 1 : 0
   };
   calendarOpts: CalendarComponentOptions = {
-    from: new Date(2000, 0, 1),
-    daysConfig: []
+    daysConfig: [],
+    from: new Date(2019, 11, 1),
+    to: moment().endOf('year').toDate()
   };
   @ViewChild('calendar', { static: false }) cal: CalendarComponent;
   @ViewChild('slider', { static: false }) slider: IonSlides;
@@ -38,6 +39,8 @@ export class HomePage implements AfterViewInit {
         item
       }
     });
+
+    modal.onDidDismiss().then(() => this.date = null);
     return await modal.present();
   }
 

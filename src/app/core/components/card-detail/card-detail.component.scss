@@ -12,12 +12,13 @@ ion-card-header {
 }
 
 ion-card-content {
-  padding: 16px 8px;
+  padding: 16px 8px 32px;
   position: relative;
 
   .updated {
+    bottom: 4px;
+    font-size: 12px;
     position: absolute;
-    right: 0;
-    bottom: 0;
+    right: 8px;
   }
 }

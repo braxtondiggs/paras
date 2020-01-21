@@ -33,3 +33,40 @@ ion-toolbar {
 body {
   --ion-background-color: #f9f7f7;
 }
+
+$alert: #f38181;
+
+ion-calendar .days {
+  .marked::after {
+    background-color: $alert;
+    border-radius: 50%;
+    bottom: 2px;
+    content: '';
+    display: block;
+    height: 6px;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, 0);
+    width: 6px;
+  }
+
+  .on-selected {
+    background-color: initial !important;
+    color: #333 !important;
+
+    p {
+      color: #333 !important;
+      font-size: 1.2em !important;
+      font-weight: 500 !important;
+    }
+  }
+
+  .today {
+    background-color: #3880ff !important;
+    color: #fff !important;
+
+    p {
+      color: #fff !important;
+    }
+  }
+}

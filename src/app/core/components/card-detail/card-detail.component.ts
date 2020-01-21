@@ -20,19 +20,18 @@ export class CardDetailComponent implements OnChanges {
           ...data,
           created: moment(data.created.toDate()).fromNow(),
           date: moment(data.date.toDate()).format('MMMM Do YYYY'),
-          future: moment(data.date.toDate()).isSameOrBefore(moment())
+          lastUpdated: moment(data.date.toDate()).isSame(moment(), 'day') ||
+            moment(data.date.toDate()).isSame(moment().add(1, 'days'), 'day')
         };
       } else {
         this.detail = {
           active: true,
           created: data.fromNow(),
           date: data.format('MMMM Do YYYY'),
-          future: data.isSameOrBefore(moment()),
-          metered: true
+          metered: true,
+          lastUpdated: data.isSame(moment(), 'day')
         };
       }
-      console.log(this.detail);
-      console.log(changes.item.currentValue);
     }
   }
 }
@@ -41,7 +40,7 @@ interface Item {
   active: Boolean;
   created: String;
   date: String;
-  future: Boolean;
+  lastUpdated: Boolean;
   metered: Boolean;
   reason?: String;
 }

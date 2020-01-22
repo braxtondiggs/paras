@@ -70,3 +70,13 @@ ion-calendar .days {
     }
   }
 }
+
+#custom-picker .picker-col.picker-opts-left .picker-opt {
+  &:first-child {
+    display: none;
+  }
+
+  &:last-child {
+    pointer-events: none;
+  }
+}

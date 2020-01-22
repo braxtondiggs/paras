@@ -27,7 +27,9 @@ export class SettingsPage implements OnInit {
       today: 'none',
       todayCustom: moment().format(),
       nextDay: 'none',
-      nextDayCustom: moment().format()
+      nextDayCustom: moment().set({ hour: 16 }).format(),
+      exceptionOnly: false,
+      weekend: false
     };
     this.settingsForm = fb.group(this.settings);
   }
@@ -41,32 +43,40 @@ export class SettingsPage implements OnInit {
         nextDayCustom: moment.utc(settings.nextDayCustom, 'h:mm A z').local().format()
       };
       this.settingsForm.patchValue({ ...this.settings, ...settings });
+      this.settings = settings;
     });
 
     this.settingsForm.controls.today.valueChanges.pipe(skip(1), distinctUntilChanged()).subscribe(async (today) => {
+      if (!today) { return; }
       if (today === 'custom') {
         await this.today.open();
         this.today.ionChange.subscribe((data: CustomEvent) =>
           this.save({ today, todayCustom: moment.utc(data.detail.value, 'YYYY-MM-DD HH:mmZ').format('h:mm A z') })
         );
-        this.today.ionCancel.subscribe(() => this.settingsForm.controls.today.patchValue('none'));
+        this.today.ionCancel.subscribe(() => this.settingsForm.controls.today.patchValue(this.settings.today));
       } else {
         this.save({ today });
       }
     });
 
     this.settingsForm.controls.nextDay.valueChanges.pipe(skip(1), distinctUntilChanged()).subscribe(async (nextDay) => {
+      if (!nextDay) { return; }
       if (nextDay === 'custom') {
         await this.nextday.open();
         this.nextday.ionChange.subscribe((data: CustomEvent) =>
           this.save({ nextDay, nextDayCustom: moment.utc(data.detail.value, 'YYYY-MM-DD HH:mmZ').format('h:mm A z') })
         );
-        this.nextday.ionCancel.subscribe(() => this.settingsForm.controls.nextDay.reset());
+        this.nextday.ionCancel.subscribe(() => this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay));
         return;
       } else {
         this.save({ nextDay });
       }
     });
+
+    this.settingsForm.controls.exceptionOnly.valueChanges.pipe(skip(1), distinctUntilChanged()).subscribe((exceptionOnly) =>
+      this.save({ exceptionOnly }));
+    this.settingsForm.controls.weekend.valueChanges.pipe(skip(1), distinctUntilChanged()).subscribe((weekend) =>
+      this.save({ weekend }));
   }
 
   private save(data: Setting): void {
@@ -83,7 +93,7 @@ export class SettingsPage implements OnInit {
       t = await this.toast.create({
         color: 'dark',
         duration: 1500,
-        message: 'Your settings have been saved.'
+        message: 'An error has occured.'
       });
     }).finally(() => {
       t.present();
@@ -96,7 +106,7 @@ export class SettingsPage implements OnInit {
       case 'none':
         return 'Get notified about alternate side parking';
       case 'immediately':
-        return 'Next notification around 4pm';
+        return `Next notification around ${type === 'today' ? '7:30AM' : '4:00PM'}`;
       case 'custom':
         return `Next notification at ${moment(time).format('h:mm A')}`;
       default:

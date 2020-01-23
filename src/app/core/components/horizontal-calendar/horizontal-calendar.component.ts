@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonSlides } from '@ionic/angular';
-import * as moment from 'moment';
 import { concat, filter, first, orderBy, last } from 'lodash-es';
 import { DbService } from '../../services';
 import { Calendar, Feed } from '../../interface';
+import { LoadingController } from '@ionic/angular';
+import * as moment from 'moment';
 @Component({
   selector: 'horizontal-calendar',
   templateUrl: './horizontal-calendar.component.html',
@@ -11,18 +12,23 @@ import { Calendar, Feed } from '../../interface';
 })
 export class HorizontalCalendarComponent implements OnInit {
   @ViewChild('slider', { static: false }) slider: IonSlides;
-  selected: Feed;
+  loading: any;
+  isLoading = true;
+  selected: Feed | moment.Moment;
   feed: Feed[];
   active: Calendar;
   items: Calendar[] = [];
   slideOpts = {
     centeredSlides: true,
-    initialSlide: 4,
-    slidesPerView: 5
+    initialSlide: 6,
+    slidesPerView: 7,
+    spaceBetween: 4
   };
-  constructor(private db: DbService) { }
+  constructor(private db: DbService, private loadingCtl: LoadingController) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.loading = await this.loadingCtl.create();
+    this.loading.present();
     this.items = this.getDatesBetween();
     this.active = this.items[this.slideOpts.initialSlide];
     this.getData();
@@ -30,9 +36,9 @@ export class HorizontalCalendarComponent implements OnInit {
 
   async onSlideChange() {
     const index = await this.slider.getActiveIndex();
-    if (this.items.length - 2 <= index) {
+    if (this.items.length - 3 <= index) {
       await this.slideEnd();
-    } else if (index <= 1) {
+    } else if (index <= 2) {
       await this.slideStart();
     }
     this.active = this.items[index];
@@ -61,14 +67,14 @@ export class HorizontalCalendarComponent implements OnInit {
 
   private async slideStart() {
     const date = first(this.items);
-    await this.slider.slideTo(6, 0);
+    await this.slider.slideTo(7, 0);
     const start = moment(date.text).subtract(5, 'days');
     this.items = concat(this.getDatesBetween(start, moment(date.text).subtract(1, 'days')));
   }
 
   private getDatesBetween(startDate?: moment.Moment, endDate?: moment.Moment): Calendar[] {
-    const start = startDate || moment().subtract(4, 'days');
-    const end = endDate || moment().add(4, 'days');
+    const start = startDate || moment().subtract(6, 'days');
+    const end = endDate || moment().add(6, 'days');
     const dates: Calendar[] = [];
 
     while (start.isBefore(end) || start.isSame(end)) {
@@ -86,8 +92,12 @@ export class HorizontalCalendarComponent implements OnInit {
         .where('date', '>=', start.date)
         .where('date', '<', end.date))
       .subscribe((feed) => {
-        this.selected = this.getSelectedItem(this.active, feed);
+        this.selected = this.getSelectedItem(this.active, feed) || moment(this.active.date);
         this.feed = feed;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.loading.dismiss();
+        }, 250);
       });
   }
 

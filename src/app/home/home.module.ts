@@ -6,6 +6,8 @@ import { RouterModule } from '@angular/router';
 import { HorizontalCalendarComponent } from '../core/components/horizontal-calendar/horizontal-calendar.component';
 import { CalendarModule } from 'ion2-calendar';
 import { HomePage } from './home.page';
+import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
+import { CardDetailComponent } from '../core/components/card-detail/card-detail.component';
 
 @NgModule({
   imports: [
@@ -17,9 +19,14 @@ import { HomePage } from './home.page';
       {
         path: '',
         component: HomePage
+      },
+      {
+        path: 'calendar',
+        component: HomePage
       }
     ])
   ],
-  declarations: [HomePage, HorizontalCalendarComponent]
+  declarations: [HomePage, HorizontalCalendarComponent, ModalDetailComponent, CardDetailComponent],
+  entryComponents: [ModalDetailComponent]
 })
 export class HomePageModule { }

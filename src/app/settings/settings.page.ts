@@ -3,9 +3,9 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { DbService, AuthService, FcmService } from '../core/services';
 import { Setting } from '../core/interface';
 import * as moment from 'moment';
-import { identity, pickBy } from 'lodash-es';
-import { skip, distinctUntilChanged, take } from 'rxjs/operators';
-import { ToastController, IonDatetime } from '@ionic/angular';
+import { omitBy, isNil } from 'lodash-es';
+import { distinctUntilChanged, take } from 'rxjs/operators';
+import { AlertController, IonDatetime, LoadingController, ToastController } from '@ionic/angular';
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
@@ -15,54 +15,60 @@ export class SettingsPage implements OnInit {
   uid: string;
   settings: Setting;
   settingsForm: FormGroup;
+  isLoading = true;
+  format = 'h:mm A z';
   @ViewChild('todayDatePicker', { static: false }) today: IonDatetime;
   @ViewChild('nextdayDatePicker', { static: false }) nextday: IonDatetime;
   constructor(
     fb: FormBuilder,
+    private alert: AlertController,
     private db: DbService,
     private auth: AuthService,
     private fcm: FcmService,
+    private loading: LoadingController,
     private toast: ToastController) {
     this.settings = {
       today: 'none',
       todayCustom: moment().format(),
       nextDay: 'none',
-      nextDayCustom: moment().format()
+      nextDayCustom: moment().format(),
+      exceptionOnly: false,
+      weekend: false
     };
     this.settingsForm = fb.group(this.settings);
   }
 
   async ngOnInit() {
     this.uid = await this.auth.uid();
+    const loading = await this.loading.create();
+    loading.present();
     this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe((settings: Setting) => {
       settings = {
         ...settings,
-        todayCustom: moment.utc(settings.todayCustom, 'h:mm A z').local().format(),
-        nextDayCustom: moment.utc(settings.nextDayCustom, 'h:mm A z').local().format()
+        todayCustom: moment.utc(settings.todayCustom, this.format).local().format(),
+        nextDayCustom: moment.utc(settings.nextDayCustom, this.format).local().format()
       };
-      this.settingsForm.patchValue({ ...this.settings, ...settings });
+      this.settingsForm.patchValue({ ...this.settings, ...settings }, { emitEvent: false, onlySelf: true });
+      this.settings = settings;
+      setTimeout(() => {
+        this.isLoading = false;
+        loading.dismiss();
+      });
     });
 
-    this.settingsForm.controls.today.valueChanges.pipe(skip(1), distinctUntilChanged()).subscribe(async (today) => {
+    this.settingsForm.controls.today.valueChanges.pipe(distinctUntilChanged()).subscribe(async (today) => {
+      if (!today) { return; }
       if (today === 'custom') {
         await this.today.open();
-        this.today.ionChange.subscribe((data: CustomEvent) =>
-          this.save({ today, todayCustom: moment.utc(data.detail.value, 'YYYY-MM-DD HH:mmZ').format('h:mm A z') })
-        );
-        this.today.ionCancel.subscribe(() => this.settingsForm.controls.today.patchValue('none'));
       } else {
         this.save({ today });
       }
     });
 
-    this.settingsForm.controls.nextDay.valueChanges.pipe(skip(1), distinctUntilChanged()).subscribe(async (nextDay) => {
+    this.settingsForm.controls.nextDay.valueChanges.pipe(distinctUntilChanged()).subscribe(async (nextDay) => {
+      if (!nextDay) { return; }
       if (nextDay === 'custom') {
         await this.nextday.open();
-        this.nextday.ionChange.subscribe((data: CustomEvent) =>
-          this.save({ nextDay, nextDayCustom: moment.utc(data.detail.value, 'YYYY-MM-DD HH:mmZ').format('h:mm A z') })
-        );
-        this.nextday.ionCancel.subscribe(() => this.settingsForm.controls.nextDay.reset());
-        return;
       } else {
         this.save({ nextDay });
       }
@@ -71,8 +77,7 @@ export class SettingsPage implements OnInit {
 
   private save(data: Setting): void {
     let t: HTMLIonToastElement;
-    data = pickBy({ ...data, token: this.fcm.token }, identity);
-    console.log(data);
+    data = omitBy({ ...data, token: this.fcm.token }, isNil);
     this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
       t = await this.toast.create({
         color: 'dark',
@@ -83,7 +88,7 @@ export class SettingsPage implements OnInit {
       t = await this.toast.create({
         color: 'dark',
         duration: 1500,
-        message: 'Your settings have been saved.'
+        message: 'An error has occured.'
       });
     }).finally(() => {
       t.present();
@@ -96,11 +101,51 @@ export class SettingsPage implements OnInit {
       case 'none':
         return 'Get notified about alternate side parking';
       case 'immediately':
-        return 'Next notification around 4pm';
+        return `Next notification around ${type === 'today' ? '7:30AM' : '4:00PM'}`;
       case 'custom':
         return `Next notification at ${moment(time).format('h:mm A')}`;
       default:
         break;
     }
+  }
+
+  async onTodayChange(date: string) {
+    if (moment(date, 'YYYY-MM-DD HH:mmZ').isBefore(moment().set({ hour: 7, minute: 29 }))) {
+      const alert = await this.alert.create({
+        header: 'Invalid Time',
+        message: 'The time you have selected is too early, please select a time before 7:30AM.',
+        buttons: [{
+          text: 'Okay',
+          handler: () => { this.settingsForm.controls.today.patchValue(this.settings.today); }
+        }]
+      });
+      await alert.present();
+      return;
+    }
+    this.save({ today: this.settingsForm.value.today, todayCustom: moment.utc(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
+  }
+
+  onTodayCancel() {
+    this.settingsForm.controls.today.patchValue(this.settings.today);
+  }
+
+  async onNextDateChange(date: string) {
+    if (moment(date, 'YYYY-MM-DD HH:mmZ').isBefore(moment().set({ hour: 15, minute: 59 }))) {
+      const alert = await this.alert.create({
+        header: 'Invalid Time',
+        message: 'The time you have selected is too early, please select a time before 4:00PM.',
+        buttons: [{
+          text: 'Okay',
+          handler: () => { this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay); }
+        }]
+      });
+      await alert.present();
+      return;
+    }
+    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: moment.utc(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
+  }
+
+  onNextDateCancel() {
+    this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay);
   }
 }

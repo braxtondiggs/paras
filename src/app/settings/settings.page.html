@@ -7,7 +7,7 @@
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
-  <form [formGroup]="settingsForm">
+  <form [formGroup]="settingsForm" *ngIf="!isLoading">
     <ion-card>
       <ion-item lines="none">
         <ion-label class="ion-text-wrap">
@@ -25,7 +25,7 @@
           <h2>Custom Time</h2>
           <ion-note>The time you would like to receive a notification</ion-note>
         </ion-label>
-        <ion-datetime #todayDatePicker formControlName="todayCustom" disp3lay-format="h:mm A" picker-format="h:mm A"></ion-datetime>
+        <ion-datetime #todayDatePicker formControlName="todayCustom" disp3lay-format="h:mm A" picker-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onTodayChange($event.detail.value)" (ionCancel)="onTodayCancel()"></ion-datetime>
       </ion-item>
     </ion-card>
     <ion-card>
@@ -45,8 +45,18 @@
           <h2>Custom Time</h2>
           <ion-note>The time you would like to receive a notification</ion-note>
         </ion-label>
-        <ion-datetime #nextdayDatePicker formControlName="nextDayCustom" display-format="h:mm A" picker-format="h:mm A"></ion-datetime>
+        <ion-datetime #nextdayDatePicker formControlName="nextDayCustom" display-format="h:mm A" picker-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onNextDateChange($event.detail.value)" (ionCancel)="onNextDateCancel()"></ion-datetime>
       </ion-item>
     </ion-card>
+    <ion-list>
+      <ion-item>
+        <ion-label>Exception Notifications Only:</ion-label>
+        <ion-checkbox formControlName="exceptionOnly" (ionChange)="save({exceptionOnly: $event.detail.checked})"></ion-checkbox>
+      </ion-item>
+      <ion-item>
+        <ion-label>Weekend Notifications:</ion-label>
+        <ion-checkbox formControlName="weekend" (ionChange)="save({weekend: $event.detail.checked})"></ion-checkbox>
+      </ion-item>
+    </ion-list>
   </form>
 </ion-content>

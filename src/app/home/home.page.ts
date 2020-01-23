@@ -1,7 +1,10 @@
 import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, CalendarComponent } from 'ion2-calendar';
+import { ModalController, IonSlides } from '@ionic/angular';
 import { DbService } from '../core/services';
 import { map } from 'rxjs/operators';
+import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
 import { Feed } from '../core/interface';
 import * as moment from 'moment';
 
@@ -12,20 +15,33 @@ import * as moment from 'moment';
 })
 export class HomePage implements AfterViewInit {
   index = true; // TODO: Save using storage config
-  date: string;
+  date: string = moment().format();
+  items: Feed[];
   slideOpts = {
-    allowTouchMove: false
+    allowTouchMove: false,
+    initialSlide: this.location.path().includes('calendar') ? 1 : 0
   };
   calendarOpts: CalendarComponentOptions = {
-    from: new Date(2000, 0, 1),
-    daysConfig: []
+    daysConfig: [],
+    from: new Date(2019, 11, 1),
+    to: moment().endOf('year').toDate()
   };
   @ViewChild('calendar', { static: false }) cal: CalendarComponent;
+  @ViewChild('slider', { static: false }) slider: IonSlides;
 
-  constructor(private db: DbService) { }
+  constructor(private db: DbService, private modal: ModalController, private location: Location) { }
 
-  onSelect($event) {
-    console.log($event); // TODO: open up detail view
+  async onSelect(date: string) {
+    const item = this.items.find((o) => moment(o.date.toDate()).isSame(date, 'day')) || moment(date);
+    const modal = await this.modal.create({
+      component: ModalDetailComponent,
+      componentProps: {
+        item
+      }
+    });
+
+    modal.onDidDismiss().then(() => this.date = null);
+    return await modal.present();
   }
 
   ngAfterViewInit(): void {
@@ -36,6 +52,12 @@ export class HomePage implements AfterViewInit {
     this.getData(moment($event.newMonth.dateObj), moment($event.newMonth.dateObj).endOf('month'));
   }
 
+  switchCalenderView() {
+    this.index = !this.index;
+    this.slider.slideTo(this.index ? 0 : 1);
+    this.location.replaceState(`/home${this.index ? '' : '/calendar'}`);
+  }
+
   private getData(start: moment.Moment, end: moment.Moment) {
     this.db.collection$('feed', (ref) =>
       ref
@@ -44,6 +66,7 @@ export class HomePage implements AfterViewInit {
       .pipe(
         map((item: Feed[]) => item.filter(o => !o.active || !o.metered)))
       .subscribe((items) => {
+        this.items = items;
         const daysConfig: DayConfig[] = items.map(item => ({
           cssClass: this.getCalendarClass(item),
           date: item.date.toDate(),

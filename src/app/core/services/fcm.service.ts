@@ -4,9 +4,6 @@ import { FirebaseX } from '@ionic-native/firebase-x/ngx';
 import { Platform } from '@ionic/angular';
 import { from, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { DbService } from './db.service';
-import { AuthService } from './auth.service';
-import * as moment from 'moment';
 
 @Injectable({
   providedIn: 'root'
@@ -16,8 +13,6 @@ export class FcmService {
 
   constructor(
     private afMessaging: AngularFireMessaging,
-    private auth: AuthService,
-    private db: DbService,
     private firebase: FirebaseX,
     private platform: Platform
   ) { }
@@ -31,10 +26,7 @@ export class FcmService {
     if (this.platform.is('ios')) {
       await this.firebase.grantPermission();
     }
-    const token = await this.firebase.getToken();
-    const uid = await this.auth.uid();
-    await this.db.updateAt(`devices/${token}`, this.getDeviceInfo(token, uid));
-    return token;
+    return await this.firebase.getToken();
   }
 
   listenToMessages() {
@@ -55,14 +47,5 @@ export class FcmService {
       body = payload.notification.body;
     }
     // TODO: Show toast message
-  }
-
-  private getDeviceInfo(token: string, uid: string) {
-    return {
-      platform: this.platform.platforms(),
-      token,
-      uid,
-      updateAt: moment().toDate()
-    };
   }
 }

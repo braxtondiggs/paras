@@ -3,6 +3,7 @@ import { IonSlides } from '@ionic/angular';
 import { concat, filter, first, orderBy, last } from 'lodash-es';
 import { DbService } from '../../services';
 import { Calendar, Feed } from '../../interface';
+import { LoadingController } from '@ionic/angular';
 import * as moment from 'moment';
 @Component({
   selector: 'horizontal-calendar',
@@ -11,6 +12,8 @@ import * as moment from 'moment';
 })
 export class HorizontalCalendarComponent implements OnInit {
   @ViewChild('slider', { static: false }) slider: IonSlides;
+  loading: any;
+  isLoading = true;
   selected: Feed | moment.Moment;
   feed: Feed[];
   active: Calendar;
@@ -21,9 +24,11 @@ export class HorizontalCalendarComponent implements OnInit {
     slidesPerView: 7,
     spaceBetween: 4
   };
-  constructor(private db: DbService) { }
+  constructor(private db: DbService, private loadingCtl: LoadingController) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.loading = await this.loadingCtl.create();
+    this.loading.present();
     this.items = this.getDatesBetween();
     this.active = this.items[this.slideOpts.initialSlide];
     this.getData();
@@ -89,6 +94,10 @@ export class HorizontalCalendarComponent implements OnInit {
       .subscribe((feed) => {
         this.selected = this.getSelectedItem(this.active, feed) || moment(this.active.date);
         this.feed = feed;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.loading.dismiss();
+        }, 250);
       });
   }
 

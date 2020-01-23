@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf="!isLoading">
   <div class="horizontal-container">
     <div class="month" *ngIf="active">{{active.month.long}}</div>
     <div class="slider-container">

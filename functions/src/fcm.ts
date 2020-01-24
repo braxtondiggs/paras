@@ -19,7 +19,7 @@ export async function FCM(type?: string, tweet?: any) {
 
 async function getImmediateNotifications(tweet: any) {
   const isToday = dayjs(tweet.date).isSame(dayjs(), 'day');
-  const query = await db.collection('notifications').where(isToday ? 'today' : 'nextDay', '==', 'immediately').get();
+  const query = await db.collection('notifications').where(isToday ? 'today' : 'nextDay', '==', 'immediately').where('type', '==', 'NYC').get();
   const promise: FirebaseFirestore.QueryDocumentSnapshot[] = [];
   const tokens: string[] = [];
   query.forEach(snapshot => promise.push(snapshot));
@@ -48,7 +48,7 @@ async function getCustomNotifications() {
     isToday = dayjs(date.toDate()).isSame(dayjs(), 'day');
   }
   promise = []; // reset
-  const query = await db.collection('notifications').where(isToday ? 'today' : 'nextDay', '==', 'custom').get();
+  const query = await db.collection('notifications').where(isToday ? 'today' : 'nextDay', '==', 'custom').where('type', '==', 'NYC').get();
   const tokens: string[] = [];
   query.forEach(snapshot => promise.push(snapshot));
   for (const snapshot of promise) {

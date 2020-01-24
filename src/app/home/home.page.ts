@@ -62,7 +62,8 @@ export class HomePage implements AfterViewInit {
     this.db.collection$('feed', (ref) =>
       ref
         .where('date', '>=', start.toDate())
-        .where('date', '<', end.toDate()))
+        .where('date', '<', end.toDate())
+        .where('type', '==', 'NYC'))
       .pipe(
         map((item: Feed[]) => item.filter(o => !o.active || !o.metered)))
       .subscribe((items) => {

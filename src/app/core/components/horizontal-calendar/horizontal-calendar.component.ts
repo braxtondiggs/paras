@@ -90,7 +90,8 @@ export class HorizontalCalendarComponent implements OnInit {
     this.db.collection$('feed', (ref) =>
       ref
         .where('date', '>=', start.date)
-        .where('date', '<', end.date))
+        .where('date', '<', end.date)
+        .where('type', '==', 'NYC'))
       .subscribe((feed) => {
         this.selected = this.getSelectedItem(this.active, feed) || moment(this.active.date);
         this.feed = feed;

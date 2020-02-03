@@ -75,7 +75,7 @@ export class SettingsPage implements OnInit {
     });
   }
 
-  private save(data: Setting): void {
+  save(data: Setting): void {
     let t: HTMLIonToastElement;
     data = omitBy({ ...data, token: this.fcm.token, type: 'NYC' }, isNil);
     this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {

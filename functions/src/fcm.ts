@@ -7,7 +7,8 @@ dayjs.extend(weekday)
 const payload: admin.messaging.MessagingPayload = {
   notification: {
     title: 'Alternate Side Parking',
-    icon: 'notification_icon'
+    icon: 'notification_icon',
+    color: "#74b9ff"
   }
 };
 export async function FCM(type?: string, tweet?: any) {

@@ -33,6 +33,9 @@ export class FcmService {
     let messages$: Observable<any>;
     if (this.platform.is('cordova')) {
       messages$ = this.firebase.onMessageReceived();
+      this.firebase.setAnalyticsCollectionEnabled(true);
+      this.firebase.setCrashlyticsCollectionEnabled(true);
+      this.firebase.setPerformanceCollectionEnabled(true);
     } else {
       messages$ = this.afMessaging.messages;
     }

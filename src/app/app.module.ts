@@ -18,7 +18,6 @@ import { AuthService, DbService, FcmService } from './core/services';
 
 @NgModule({
   declarations: [AppComponent],
-  entryComponents: [],
   imports: [
     AngularFireAuthModule,
     AngularFireMessagingModule,

@@ -23,7 +23,7 @@ $main-color: darken($card-border, 30%);
       transform: translate(0, -50%);
       --padding-start: 0;
       --padding-end: 0;
-      --opacity: .6;
+      --opacity: 0.8;
 
       &.start {
         left: 0;

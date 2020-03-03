@@ -26,8 +26,8 @@ export class HomePage implements AfterViewInit {
     from: new Date(2019, 11, 1),
     to: moment().endOf('year').toDate()
   };
-  @ViewChild('calendar', { static: false }) cal: CalendarComponent;
-  @ViewChild('slider', { static: false }) slider: IonSlides;
+  @ViewChild('calendar') cal: CalendarComponent;
+  @ViewChild('slider') slider: IonSlides;
 
   constructor(private db: DbService, private modal: ModalController, private location: Location) { }
 

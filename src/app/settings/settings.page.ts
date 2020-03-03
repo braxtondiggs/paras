@@ -17,8 +17,8 @@ export class SettingsPage implements OnInit {
   settingsForm: FormGroup;
   isLoading = true;
   format = 'h:mm A z';
-  @ViewChild('todayDatePicker', { static: false }) today: IonDatetime;
-  @ViewChild('nextdayDatePicker', { static: false }) nextday: IonDatetime;
+  @ViewChild('todayDatePicker') today: IonDatetime;
+  @ViewChild('nextdayDatePicker') nextday: IonDatetime;
   constructor(
     fb: FormBuilder,
     private alert: AlertController,

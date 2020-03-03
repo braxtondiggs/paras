@@ -11,7 +11,7 @@ import * as moment from 'moment';
   styleUrls: ['./horizontal-calendar.component.scss'],
 })
 export class HorizontalCalendarComponent implements OnInit {
-  @ViewChild('slider', { static: false }) slider: IonSlides;
+  @ViewChild('slider') slider: IonSlides;
   loading: any;
   isLoading = true;
   selected: Feed | moment.Moment;

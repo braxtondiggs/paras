@@ -15,9 +15,10 @@ export class AppComponent {
     private statusBar: StatusBar
   ) {
     this.initializeApp();
+    this.setTheme();
   }
 
-  async initializeApp() {
+  private async initializeApp() {
     await this.platform.ready();
     if (this.platform.is('cordova')) {
       this.statusBar.styleLightContent();
@@ -25,5 +26,16 @@ export class AppComponent {
         this.fcm.listenToMessages().subscribe();
       });
     }
+  }
+
+  private setTheme() {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    this.toggleDarkTheme(prefersDark.matches);
+    // tslint:disable-next-line: deprecation
+    prefersDark.addListener((mediaQuery) => this.toggleDarkTheme(mediaQuery.matches));
+  }
+
+  private toggleDarkTheme(shouldAdd: boolean) {
+    document.body.classList.toggle('dark', shouldAdd);
   }
 }

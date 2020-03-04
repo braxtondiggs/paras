@@ -17,8 +17,8 @@ export class SettingsPage implements OnInit {
   settingsForm: FormGroup;
   isLoading = true;
   format = 'h:mm A z';
-  @ViewChild('todayDatePicker', { static: false }) today: IonDatetime;
-  @ViewChild('nextdayDatePicker', { static: false }) nextday: IonDatetime;
+  @ViewChild('todayDatePicker') today: IonDatetime;
+  @ViewChild('nextdayDatePicker') nextday: IonDatetime;
   constructor(
     fb: FormBuilder,
     private alert: AlertController,
@@ -75,9 +75,9 @@ export class SettingsPage implements OnInit {
     });
   }
 
-  private save(data: Setting): void {
+  save(data: Setting): void {
     let t: HTMLIonToastElement;
-    data = omitBy({ ...data, token: this.fcm.token }, isNil);
+    data = omitBy({ ...data, token: this.fcm.token, type: 'NYC' }, isNil);
     this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
       t = await this.toast.create({
         color: 'dark',

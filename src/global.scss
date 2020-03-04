@@ -70,3 +70,27 @@ ion-calendar .days {
     }
   }
 }
+
+body.dark {
+  .horizontal-container {
+    .month {
+      color: var(--ion-color-step-900) !important;
+    }
+
+    .swiper-slide {
+      background-color: var(--ion-item-background) !important;
+
+      .day-num {
+        color: var(--ion-color-step-900) !important;
+      }
+    }
+  }
+
+  ion-calendar {
+    background: initial !important;
+
+    button.days-btn p {
+      color: var(--ion-color-step-900) !important;
+    }
+  }
+}

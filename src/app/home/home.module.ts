@@ -26,7 +26,6 @@ import { CardDetailComponent } from '../core/components/card-detail/card-detail.
       }
     ])
   ],
-  declarations: [HomePage, HorizontalCalendarComponent, ModalDetailComponent, CardDetailComponent],
-  entryComponents: [ModalDetailComponent]
+  declarations: [HomePage, HorizontalCalendarComponent, ModalDetailComponent, CardDetailComponent]
 })
 export class HomePageModule { }

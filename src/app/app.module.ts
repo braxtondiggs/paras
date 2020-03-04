@@ -4,6 +4,8 @@ import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { FirebaseX } from '@ionic-native/firebase-x/ngx';
+import { Network } from '@ionic-native/network/ngx';
+import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { AngularFireModule } from '@angular/fire';
@@ -18,7 +20,6 @@ import { AuthService, DbService, FcmService } from './core/services';
 
 @NgModule({
   declarations: [AppComponent],
-  entryComponents: [],
   imports: [
     AngularFireAuthModule,
     AngularFireMessagingModule,
@@ -33,6 +34,8 @@ import { AuthService, DbService, FcmService } from './core/services';
     DbService,
     FcmService,
     FirebaseX,
+    Network,
+    SplashScreen,
     StatusBar,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],

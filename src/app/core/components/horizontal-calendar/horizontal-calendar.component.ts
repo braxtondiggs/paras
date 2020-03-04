@@ -11,7 +11,7 @@ import * as moment from 'moment';
   styleUrls: ['./horizontal-calendar.component.scss'],
 })
 export class HorizontalCalendarComponent implements OnInit {
-  @ViewChild('slider', { static: false }) slider: IonSlides;
+  @ViewChild('slider') slider: IonSlides;
   loading: any;
   isLoading = true;
   selected: Feed | moment.Moment;
@@ -90,7 +90,8 @@ export class HorizontalCalendarComponent implements OnInit {
     this.db.collection$('feed', (ref) =>
       ref
         .where('date', '>=', start.date)
-        .where('date', '<', end.date))
+        .where('date', '<', end.date)
+        .where('type', '==', 'NYC'))
       .subscribe((feed) => {
         this.selected = this.getSelectedItem(this.active, feed) || moment(this.active.date);
         this.feed = feed;

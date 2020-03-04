@@ -5,5 +5,6 @@ export interface Setting {
   today?: string;
   todayCustom?: string;
   token?: string;
+  type?: string;
   weekend?: boolean;
 }

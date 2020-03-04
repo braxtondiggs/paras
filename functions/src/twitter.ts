@@ -41,8 +41,8 @@ export async function getNYFeed(_request: functions.https.Request, response: fun
 
 export async function getTweetReplies(request: functions.https.Request, response: functions.Response) {
   const params = request.url.split('/');
-  const tweets = await client.get('search/tweets', { since_id: params[1], q: 'to:@NYCASP', tweet_mode: 'extended', until: params[2] });
-  return response.send(tweets);
+  const tweets = await client.get('search/tweets', { since_id: params[1], q: 'to:@NYCASP', count: 100, max_id: null });
+  return response.send(tweets.statuses); // .filter((tweet: any) => tweet.in_reply_to_status_id_str === params[1].toString()));
 }
 
 function getDate(text: string): Date | null {

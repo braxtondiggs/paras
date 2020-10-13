@@ -24,15 +24,15 @@ export class FcmService {
 
   private async getPermissionNative() {
     if (this.platform.is('ios')) {
-      await this.firebase.grantPermission();
+      // await this.firebase.grantPermission();
     }
-    return await this.firebase.getToken();
+    return ''; //await this.firebase.getToken();
   }
 
   listenToMessages() {
     let messages$: Observable<any>;
     if (this.platform.is('cordova')) {
-      messages$ = this.firebase.onMessageReceived();
+      // messages$ = this.firebase.onMessageReceived();
     } else {
       messages$ = this.afMessaging.messages;
     }

@@ -3,7 +3,6 @@ import { AngularFirestore, QueryFn } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-
 @Injectable({
   providedIn: 'root'
 })

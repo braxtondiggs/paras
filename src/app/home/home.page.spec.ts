@@ -1,4 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HorizontalCalendarComponent } from '../core/components/horizontal-calendar/horizontal-calendar.component';
 import { IonicModule } from '@ionic/angular';
 
 import { HomePage } from './home.page';
@@ -9,8 +11,8 @@ describe('HomePage', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ HomePage ],
-      imports: [IonicModule.forRoot()]
+      declarations: [HomePage, HorizontalCalendarComponent],
+      imports: [IonicModule.forRoot(), RouterTestingModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(HomePage);
@@ -18,7 +20,7 @@ describe('HomePage', () => {
     fixture.detectChanges();
   }));
 
-  it('should create', () => {
+  it('should create', async () => {
     expect(component).toBeTruthy();
   });
 });

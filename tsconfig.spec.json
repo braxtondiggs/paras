@@ -2,9 +2,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "allowJs": true,
-    "types": ["jest", "node"]
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "types": ["jest", "node"],
+    "module": "commonjs",
+    "target": "es5"
   },
-  "files": ["src/zone-flags.ts", "src/polyfills.ts"],
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
 }

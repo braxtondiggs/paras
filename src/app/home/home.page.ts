@@ -6,11 +6,11 @@ import { DbService } from '../core/services';
 import { map } from 'rxjs/operators';
 import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
 import { Feed } from '../core/interface';
-import * as moment from 'moment';
+import moment from 'moment';
 
 @Component({
   selector: 'app-home',
-  templateUrl: 'home.page.html',
+  templateUrl: './home.page.html',
   styleUrls: ['home.page.scss']
 })
 export class HomePage implements AfterViewInit {

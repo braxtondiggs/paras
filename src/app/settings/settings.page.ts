@@ -2,10 +2,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { DbService, AuthService, FcmService } from '../core/services';
 import { Setting } from '../core/interface';
-import * as moment from 'moment';
-import { omitBy, isNil } from 'lodash-es';
 import { distinctUntilChanged, take } from 'rxjs/operators';
 import { AlertController, IonDatetime, LoadingController, ToastController } from '@ionic/angular';
+import { omitBy, isNil } from 'lodash-es';
+import moment from 'moment';
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',

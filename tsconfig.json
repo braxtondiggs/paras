@@ -1,22 +1,30 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
-    "outDir": "./dist/out-tsc",
-    "sourceMap": true,
+    "allowJs": true,
+    "importHelpers": true,
+    "baseUrl": "./src",
     "declaration": false,
-    "module": "esnext",
-    "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "importHelpers": true,
+    "lib": ["es2018", "dom"],
+    "moduleResolution": "node",
+    "noStrictGenericChecks": true,
+    "downlevelIteration": true,
+    "outDir": "./dist/out-tsc",
+    "paths": {
+      "app/*": ["app/*"],
+      "environments/*": ["environments/*"],
+      "lib/*": ["lib/*"],
+      "core-js/es7/reflect": ["node_modules/core-js/proposals/reflect-metadata"],
+      "core-js/es6/*": ["node_modules/core-js/es"],
+      "core-js/es7/*": ["node_modules/core-js/es"]
+    },
+    "removeComments": true,
+    "sourceMap": true,
     "target": "es5",
-    "types": "jest",
     "typeRoots": ["node_modules/@types"],
-    "lib": ["es2018", "dom"]
+    "types": ["jest", "node"]
   },
-  "angularCompilerOptions": {
-    "fullTemplateTypeCheck": true,
-    "strictInjectionParameters": true
-  }
+  "exclude": ["./node_modules/**.*"]
 }

@@ -7,9 +7,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "test": "ng test",
+    "test": "jest --runInBand",
     "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch --coverage",
+    "test:watch": "jest --watch --coverage --runInBand",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "rebuild": "rpm run nuke && npm i && ionic cordova prepare android",
@@ -24,7 +24,8 @@
     "@angular/platform-browser": "~8.1.2",
     "@angular/platform-browser-dynamic": "~8.1.2",
     "@angular/router": "~8.1.2",
-    "@ionic-native/core": "^5.19.0",
+    "@babel/core": "^7.8.3",
+    "@ionic-native/core": "^5.19.1",
     "@ionic-native/firebase-x": "^5.19.1",
     "@ionic-native/status-bar": "^5.19.1",
     "@ionic/angular": "^4.11.10",
@@ -45,7 +46,6 @@
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
-    "@angular-builders/jest": "^8.3.2",
     "@angular-devkit/architect": "~0.801.2",
     "@angular-devkit/build-angular": "^0.803.23",
     "@angular-devkit/core": "~8.1.2",
@@ -62,11 +62,12 @@
     "@types/jest": "^24.9.1",
     "@types/lodash-es": "^4.17.3",
     "@types/node": "~8.9.4",
+    "babel-jest": "^25.1.0",
+    "babel-preset-env": "^1.7.0",
     "codelyzer": "^5.2.1",
     "cordova-plugin-ionic-webview": "^4.1.3",
-    "jasmine-core": "~3.4.0",
-    "jasmine-spec-reporter": "~4.2.1",
     "jest": "^24.9.0",
+    "jest-preset-angular": "^7.1.1",
     "protractor": "~5.4.0",
     "ts-node": "~7.0.0",
     "tslint": "~5.15.0",
@@ -100,6 +101,46 @@
     },
     "platforms": [
       "android"
+    ]
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "<rootDir>/tsconfig.spec.json",
+        "stringifyContentPathRegex": "\\.html$",
+        "astTransformers": [
+          "jest-preset-angular/InlineHtmlStripStylesTransformer"
+        ]
+      }
+    },
+    "transform": {
+      "^.+\\.js$": "babel-jest",
+      "^.+\\.(ts|html)$": "ts-jest"
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "html",
+      "js",
+      "json"
+    ],
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/src/$1",
+      "^app/(.*)$": "<rootDir>/src/app/$1",
+      "^assets/(.*)$": "<rootDir>/src/assets/$1",
+      "^environments/(.*)$": "<rootDir>/src/environments/$1",
+      "^lodash-es$": "lodash",
+      "^@ionic/core/dist/ionic/svg": "<rootDir>/svgoverride.js"
+    },
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/(?!@angular|@ionic|@ionic-native|lodash-es|@angular/core|jest-test|@ngrx|ionicons)"
+    ],
+    "snapshotSerializers": [
+      "jest-preset-angular/AngularSnapshotSerializer.js",
+      "jest-preset-angular/HTMLCommentSerializer.js"
+    ],
+    "preset": "jest-preset-angular",
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setup-jest.ts"
     ]
   }
 }

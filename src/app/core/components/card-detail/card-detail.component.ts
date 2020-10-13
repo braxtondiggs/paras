@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
-import * as moment from 'moment';
 import { Feed } from '../../interface';
+import moment from 'moment';
 
 @Component({
   selector: 'app-card-detail',

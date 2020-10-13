@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { Feed } from '../../interface';
-import * as moment from 'moment';
+import moment from 'moment';
 
 @Component({
   selector: 'app-modal-detail',

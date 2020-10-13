@@ -4,7 +4,7 @@ import { concat, filter, first, orderBy, last } from 'lodash-es';
 import { DbService } from '../../services';
 import { Calendar, Feed } from '../../interface';
 import { LoadingController } from '@ionic/angular';
-import * as moment from 'moment';
+import moment from 'moment';
 @Component({
   selector: 'horizontal-calendar',
   templateUrl: './horizontal-calendar.component.html',

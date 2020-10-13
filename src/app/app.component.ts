@@ -29,7 +29,7 @@ export class AppComponent {
       if (this.network.type !== 'none') {
         this.statusBar.styleLightContent();
         this.fcm.getPermission().subscribe(() => {
-          setTimeout(() => this.splashScreen.hide(), 1000);
+          setTimeout(() => this.splashScreen.hide(), 4000);
           this.fcm.listenToMessages().subscribe();
         });
       } else {

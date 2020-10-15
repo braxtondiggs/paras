@@ -23,8 +23,8 @@ import { AuthService, DbService, FcmService } from './core/services';
   imports: [
     AngularFireAuthModule,
     AngularFireMessagingModule,
-    AngularFirestoreModule,
     AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule,
     AppRoutingModule,
     BrowserModule,
     IonicModule.forRoot()

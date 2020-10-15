@@ -4,7 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
-
+import { LaunchReview } from '@ionic-native/launch-review/ngx';
 import { SettingsPage } from './settings.page';
 
 @NgModule({
@@ -20,6 +20,7 @@ import { SettingsPage } from './settings.page';
       }
     ])
   ],
-  declarations: [SettingsPage]
+  declarations: [SettingsPage],
+  providers: [LaunchReview]
 })
 export class SettingsPageModule { }

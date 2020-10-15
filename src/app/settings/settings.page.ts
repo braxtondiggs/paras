@@ -6,6 +6,7 @@ import * as moment from 'moment';
 import { omitBy, isNil } from 'lodash-es';
 import { distinctUntilChanged, take } from 'rxjs/operators';
 import { AlertController, IonDatetime, LoadingController, ToastController } from '@ionic/angular';
+import { LaunchReview } from '@ionic-native/launch-review/ngx';
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
@@ -22,9 +23,10 @@ export class SettingsPage implements OnInit {
   constructor(
     fb: FormBuilder,
     private alert: AlertController,
-    private db: DbService,
     private auth: AuthService,
+    private db: DbService,
     private fcm: FcmService,
+    private launchReview: LaunchReview,
     private loading: LoadingController,
     private toast: ToastController) {
     this.settings = {
@@ -153,5 +155,11 @@ export class SettingsPage implements OnInit {
 
   onNextDateCancel() {
     this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay);
+  }
+
+  rate() {
+    if (this.launchReview.isRatingSupported()) {
+      this.launchReview.launch();
+    }
   }
 }

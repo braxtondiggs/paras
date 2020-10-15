@@ -33,7 +33,8 @@ export class SettingsPage implements OnInit {
       nextDay: 'none',
       nextDayCustom: moment().format(),
       exceptionOnly: false,
-      weekend: false
+      weekend: false,
+      darkMode: localStorage.getItem('darkMode') === 'true'
     };
     this.settingsForm = fb.group(this.settings);
   }
@@ -72,6 +73,11 @@ export class SettingsPage implements OnInit {
       } else {
         this.save({ nextDay });
       }
+    });
+
+    this.settingsForm.controls.darkMode.valueChanges.pipe(distinctUntilChanged()).subscribe((value) => {
+      localStorage.setItem('darkMode', value.toString());
+      document.body.classList.toggle('dark', value);
     });
   }
 

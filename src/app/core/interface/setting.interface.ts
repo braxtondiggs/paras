@@ -7,4 +7,5 @@ export interface Setting {
   token?: string;
   type?: string;
   weekend?: boolean;
+  darkMode?: boolean;
 }

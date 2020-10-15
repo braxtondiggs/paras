@@ -40,8 +40,9 @@ export class AppComponent {
 
   private setTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    this.toggleDarkTheme(prefersDark.matches);
+    if (!localStorage.getItem('darkMode')) { localStorage.setItem('darkMode', prefersDark.matches.toString()); }
     // tslint:disable-next-line: deprecation
+    this.toggleDarkTheme(localStorage.getItem('darkMode') === 'true');
     prefersDark.addListener((mediaQuery) => this.toggleDarkTheme(mediaQuery.matches));
   }
 

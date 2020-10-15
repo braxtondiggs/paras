@@ -7,6 +7,8 @@ import { omitBy, isNil } from 'lodash-es';
 import { distinctUntilChanged, take } from 'rxjs/operators';
 import { AlertController, IonDatetime, LoadingController, ToastController } from '@ionic/angular';
 import { LaunchReview } from '@ionic-native/launch-review/ngx';
+import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
+import { EmailComposer } from '@ionic-native/email-composer/ngx';
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
@@ -25,9 +27,11 @@ export class SettingsPage implements OnInit {
     private alert: AlertController,
     private auth: AuthService,
     private db: DbService,
+    private email: EmailComposer,
     private fcm: FcmService,
     private launchReview: LaunchReview,
     private loading: LoadingController,
+    private store: InAppPurchase2,
     private toast: ToastController) {
     this.settings = {
       today: 'none',
@@ -161,5 +165,63 @@ export class SettingsPage implements OnInit {
     if (this.launchReview.isRatingSupported()) {
       this.launchReview.launch();
     }
+  }
+
+  async about() {
+    const alert = await this.alert.create({
+      header: 'ASP For NYC',
+      message: 'This app was built and designed by Braxton Diggs of Cymbit Creative Studios.<br /><br />For more info and inquiries, email us at <strong>braxtondiggs@gmail.com</strong>',
+      buttons: [
+        {
+          text: 'Dismiss',
+          role: 'cancel'
+        }, {
+          text: 'Contact Us',
+          handler: () => {
+            this.email.open({ to: 'braxtondiggs@gmail.com', subject: 'ASP for NYC' });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async donate() {
+    const alert = await this.alert.create({
+      header: 'Support Development',
+      message: 'Hello, there! Hundreds of hours have been put into developing and perfecting ASP, so if you use this app quite often, why not considering supporting development.<br /><br />Your support ensures that we can keep up development, keeping the app alive.',
+      buttons: [
+        {
+          text: 'No, Thanks',
+          role: 'cancel'
+        }, {
+          text: 'Yes, Please',
+          handler: () => {
+            this.store.register({
+              id: 'donation_99',
+              type: this.store.CONSUMABLE,
+            });
+
+            this.store.when('donation_99')
+              .approved(p => p.verify())
+              .verified(async (p) => {
+                p.finish();
+                const toast = await this.toast.create({ message: 'Your support is always appreciated!', duration: 10000 });
+                toast.present();
+              })
+              .error(async () => {
+                const toast = await this.toast.create({ message: 'Something went wrong', duration: 10000 });
+                toast.present();
+              });
+            this.store.refresh();
+
+            this.store.order('donation_99');
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 }

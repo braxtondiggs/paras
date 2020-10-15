@@ -12,7 +12,7 @@ To generate a release build for Android, run the following cli command:
 
 To sign the unsigned APK, run the jarsigner tool which is also included in the Android SDK:
 
-`jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ./release.keystore ./platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk cymbit`
+`jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ../release.keystore ./platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk cymbit`
 
 Finally, the zip align tool must be ran to optimize the APK:
 

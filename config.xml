@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.cymbit.paras" version="0.2.1" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.cymbit.paras" version="0.2.2" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>ASP NYC</name>
     <description>Get updates on alternate street parking rules &amp; schedules with NYC parking app.</description>
     <author email="braxtondiggs@gmail.com" href="http://braxtondiggs.com/">Braxton Diggs</author>

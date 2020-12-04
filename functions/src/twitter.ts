@@ -12,7 +12,7 @@ const client = new Twitter({
   access_token_secret: 'E8n1eJgnKrTHQrZ6NToaYiewHRWE0c1DT7HxYixa2jnYh'
 });
 
-export async function getNYFeed(_request: functions.https.Request, response: functions.Response) {
+export async function getNYFeed(_request: functions.Request, response: functions.Response): Promise<any> {
   const tweets = await client.get('statuses/user_timeline', { screen_name: 'NYCASP', count: 1 });
   const promise: any[] = [];
   let data;

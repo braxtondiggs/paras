@@ -24,7 +24,7 @@ export class HomePage implements AfterViewInit {
   calendarOpts: CalendarComponentOptions = {
     daysConfig: [],
     from: new Date(2019, 11, 1),
-    to: moment().endOf('year').toDate()
+    to: moment().year(2021).endOf('year').toDate()
   };
   @ViewChild('calendar') cal: CalendarComponent;
   @ViewChild('slider') slider: IonSlides;

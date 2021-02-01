@@ -2,6 +2,9 @@ import db from './db';
 import * as dayjs from 'dayjs';
 import * as cheerio from 'cheerio';
 import { toNumber, replace, split } from 'lodash';
+import * as timezone from 'dayjs/plugin/timezone';
+dayjs.extend(timezone);
+dayjs.tz.setDefault('America/New_York');
 
 export async function getNYCalender(): Promise<any> {
   // const uri = 'https://www1.nyc.gov/html/dot/html/motorist/alternate-side-parking.shtml';
@@ -43,7 +46,7 @@ function convertData(id: string, date: dayjs.Dayjs, text: string) {
   return {
     active: false,
     created: dayjs().toDate(),
-    date: date.toDate(),
+    date: date.hour(12).minute(0).second(0).toDate(),
     id,
     metered: true,
     text: `Rules are suspended today, ${date.format('MMMM D')}.`,

@@ -4,6 +4,9 @@ import * as functions from 'firebase-functions';
 import { findIndex, isNull, intersection, range, replace, upperFirst } from 'lodash';
 import * as Twitter from 'twitter';
 import { FCM } from './fcm';
+import * as timezone from 'dayjs/plugin/timezone';
+dayjs.extend(timezone);
+dayjs.tz.setDefault('America/New_York');
 
 const client = new Twitter({
   consumer_key: 'ooP4LLRRJ51r454e3j7bVHc04',
@@ -45,7 +48,7 @@ function getDate(text: string): Date | null {
   const month = findIndex(months, v => text.indexOf(v) !== -1);
   const day = intersection(days, text.match(/(\d+)/g) as Array<String>);
   const year = dayjs().year();
-  const time = `${dayjs().hour()}:${dayjs().minute()}:${dayjs().second()}`;
+  const time = `${dayjs().hour(12)}:${dayjs().minute(0)}:${dayjs().second(0)}`;
   return day.length > 0 && month !== -1 ? dayjs(`${month + 1}-${day[0]}-${year} ${time}`).toDate() : null;
 }
 

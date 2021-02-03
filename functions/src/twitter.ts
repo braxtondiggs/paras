@@ -48,7 +48,7 @@ function getDate(text: string): Date | null {
   const month = findIndex(months, v => text.indexOf(v) !== -1);
   const day = intersection(days, text.match(/(\d+)/g) as Array<String>);
   const year = dayjs().year();
-  const time = `${dayjs().hour(12)}:${dayjs().minute(0)}:${dayjs().second(0)}`;
+  const time = `${dayjs().hour()}:${dayjs().minute()}:${dayjs().second()}`;
   return day.length > 0 && month !== -1 ? dayjs(`${month + 1}-${day[0]}-${year} ${time}`, 'MM-DD-YYYY HH:mm:ss').toDate() : null;
 }
 

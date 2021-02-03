@@ -49,7 +49,7 @@ function getDate(text: string): Date | null {
   const day = intersection(days, text.match(/(\d+)/g) as Array<String>);
   const year = dayjs().year();
   const time = `${dayjs().hour(12)}:${dayjs().minute(0)}:${dayjs().second(0)}`;
-  return day.length > 0 && month !== -1 ? dayjs(`${month + 1}-${day[0]}-${year} ${time}`).toDate() : null;
+  return day.length > 0 && month !== -1 ? dayjs(`${month + 1}-${day[0]}-${year} ${time}`, 'MM-DD-YYYY HH:mm:ss').toDate() : null;
 }
 
 function isActive(text: string): boolean | null {

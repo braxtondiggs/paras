@@ -4,6 +4,7 @@ import * as functions from 'firebase-functions';
 import { findIndex, isNull, intersection, range, replace, upperFirst } from 'lodash';
 import * as Twitter from 'twitter';
 import { FCM } from './fcm';
+import axios from 'axios';
 import * as timezone from 'dayjs/plugin/timezone';
 dayjs.extend(timezone);
 dayjs.tz.setDefault('America/New_York');
@@ -39,6 +40,7 @@ export async function getNYFeed(_request: functions.Request, response: functions
   });
   await Promise.all(promise);
   await FCM('scrape', data);
+  await axios.get('https://hc-ping.com/' + (dayjs().get('hour') < 12) ? 'e6cbd04c-ae72-4670-820a-9a5a89148f53' : 'c8851266-e255-4e0a-bafa-1fd85863b0c2');
   return response.status(200).send('Ok');
 }
 

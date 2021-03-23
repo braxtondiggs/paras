@@ -8,4 +8,6 @@ export interface Setting {
   type?: string;
   weekend?: boolean;
   darkMode?: boolean;
+  updateAt?: Date;
+  createdAt?: Date;
 }

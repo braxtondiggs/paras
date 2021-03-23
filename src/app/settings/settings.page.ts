@@ -20,6 +20,7 @@ export class SettingsPage implements OnInit {
   settingsForm: FormGroup;
   isLoading = true;
   format = 'h:mm A z';
+  isFirst = false;
   @ViewChild('todayDatePicker') today: IonDatetime;
   @ViewChild('nextdayDatePicker') nextday: IonDatetime;
   constructor(
@@ -57,6 +58,7 @@ export class SettingsPage implements OnInit {
       };
       this.settingsForm.patchValue({ ...this.settings, ...settings }, { emitEvent: false, onlySelf: true });
       this.settings = settings;
+      this.isFirst = isEmpty(settings.updateAt);
       setTimeout(() => {
         this.isLoading = false;
         loading.dismiss();
@@ -89,8 +91,9 @@ export class SettingsPage implements OnInit {
 
   save(data: Setting): void {
     let t: HTMLIonToastElement;
-    data = omitBy({ ...data, token: this.fcm.token, type: 'NYC' }, isNil);
-    if (!isEmpty(data.token)) {
+    const createdAt = this.isFirst ? new Date() : null;
+    data = omitBy({ ...data, token: this.fcm.token, type: 'NYC', updateAt: new Date(), createdAt }, isNil);
+    if (isEmpty(data.token)) {
       this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
         t = await this.toast.create({
           color: 'dark',
@@ -105,6 +108,7 @@ export class SettingsPage implements OnInit {
         });
       }).finally(() => {
         t.present();
+        this.isFirst = false;
       });
     }
   }

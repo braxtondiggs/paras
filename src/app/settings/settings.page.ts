@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { DbService, AuthService, FcmService } from '../core/services';
 import { Setting } from '../core/interface';
 import * as moment from 'moment';
-import { omitBy, isNil } from 'lodash-es';
+import { omitBy, isNil, isEmpty } from 'lodash-es';
 import { distinctUntilChanged, take } from 'rxjs/operators';
 import { AlertController, IonDatetime, LoadingController, ToastController } from '@ionic/angular';
 import { LaunchReview } from '@ionic-native/launch-review/ngx';
@@ -90,21 +90,23 @@ export class SettingsPage implements OnInit {
   save(data: Setting): void {
     let t: HTMLIonToastElement;
     data = omitBy({ ...data, token: this.fcm.token, type: 'NYC' }, isNil);
-    this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
-      t = await this.toast.create({
-        color: 'dark',
-        duration: 1500,
-        message: 'Your settings have been saved.'
+    if (!isEmpty(data.token)) {
+      this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
+        t = await this.toast.create({
+          color: 'dark',
+          duration: 1500,
+          message: 'Your settings have been saved.'
+        });
+      }).catch(async () => {
+        t = await this.toast.create({
+          color: 'dark',
+          duration: 1500,
+          message: 'An error has occured.'
+        });
+      }).finally(() => {
+        t.present();
       });
-    }).catch(async () => {
-      t = await this.toast.create({
-        color: 'dark',
-        duration: 1500,
-        message: 'An error has occured.'
-      });
-    }).finally(() => {
-      t.present();
-    });
+    }
   }
 
   getNotificationMessage(type: string, action: string): string {

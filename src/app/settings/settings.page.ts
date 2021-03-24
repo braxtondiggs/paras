@@ -2,13 +2,14 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { DbService, AuthService, FcmService } from '../core/services';
 import { Setting } from '../core/interface';
-import * as moment from 'moment';
 import { omitBy, isNil, isEmpty } from 'lodash-es';
 import { distinctUntilChanged, take } from 'rxjs/operators';
 import { AlertController, IonDatetime, LoadingController, ToastController } from '@ionic/angular';
 import { LaunchReview } from '@ionic-native/launch-review/ngx';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { EmailComposer } from '@ionic-native/email-composer/ngx';
+import * as moment from 'moment';
+
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
@@ -19,7 +20,7 @@ export class SettingsPage implements OnInit {
   settings: Setting;
   settingsForm: FormGroup;
   isLoading = true;
-  format = 'h:mm A z';
+  format = 'H:mm';
   isFirst = false;
   @ViewChild('todayDatePicker') today: IonDatetime;
   @ViewChild('nextdayDatePicker') nextday: IonDatetime;
@@ -51,14 +52,11 @@ export class SettingsPage implements OnInit {
     const loading = await this.loading.create();
     loading.present();
     this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe((settings: Setting) => {
-      settings = {
-        ...settings,
-        todayCustom: moment.utc(settings.todayCustom, this.format).local().format(),
-        nextDayCustom: moment.utc(settings.nextDayCustom, this.format).local().format()
-      };
-      this.settingsForm.patchValue({ ...this.settings, ...settings }, { emitEvent: false, onlySelf: true });
-      this.settings = settings;
       this.isFirst = isEmpty(settings.updateAt);
+      if (settings.todayCustom) settings.todayCustom = moment().set(this.getTime(settings.todayCustom)).format();
+      if (settings.nextDayCustom) settings.nextDayCustom = moment().set(this.getTime(settings.nextDayCustom)).format();
+      this.settings = { ...this.settings, ...settings };
+      this.settingsForm.patchValue(this.settings, { emitEvent: false, onlySelf: true });
       setTimeout(() => {
         this.isLoading = false;
         loading.dismiss();
@@ -113,6 +111,12 @@ export class SettingsPage implements OnInit {
     }
   }
 
+  private getTime(time: string): { hour: number, minute: number } {
+    if (!time) return { hour: moment().get('hour'), minute: moment().get('minute') };
+    const [hour, minute] = time.split(':');
+    return { hour: +hour, minute: +minute };
+  }
+
   getNotificationMessage(type: string, action: string): string {
     const time = type === 'today' ? this.settingsForm.value.todayCustom : this.settingsForm.value.nextDayCustom;
     switch (action) {
@@ -134,13 +138,13 @@ export class SettingsPage implements OnInit {
         message: 'The time you have selected is too early, please select a time before 7:30AM.',
         buttons: [{
           text: 'Okay',
-          handler: () => { this.settingsForm.controls.today.patchValue(this.settings.today); }
+          handler: () => this.settingsForm.controls.today.patchValue(this.settings.today)
         }]
       });
       await alert.present();
       return;
     }
-    this.save({ today: this.settingsForm.value.today, todayCustom: moment.utc(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
+    this.save({ today: this.settingsForm.value.today, todayCustom: moment(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
   }
 
   onTodayCancel() {
@@ -154,13 +158,13 @@ export class SettingsPage implements OnInit {
         message: 'The time you have selected is too early, please select a time before 4:00PM.',
         buttons: [{
           text: 'Okay',
-          handler: () => { this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay); }
+          handler: () => this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay)
         }]
       });
       await alert.present();
       return;
     }
-    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: moment.utc(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
+    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: moment(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
   }
 
   onNextDateCancel() {

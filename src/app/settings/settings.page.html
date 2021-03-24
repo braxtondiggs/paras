@@ -25,8 +25,7 @@
           <h2>Custom Time</h2>
           <ion-note>The time you would like to receive a notification</ion-note>
         </ion-label>
-        <ion-datetime #todayDatePicker formControlName="todayCustom" disp3lay-format="h:mm A" picker-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onTodayChange($event.detail.value)"
-          (ionCancel)="onTodayCancel()"></ion-datetime>
+        <ion-datetime #todayDatePicker formControlName="todayCustom" display-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onTodayChange($event.detail.value)" (ionCancel)="onTodayCancel()"></ion-datetime>
       </ion-item>
     </ion-card>
     <ion-card>
@@ -46,8 +45,7 @@
           <h2>Custom Time</h2>
           <ion-note>The time you would like to receive a notification</ion-note>
         </ion-label>
-        <ion-datetime #nextdayDatePicker formControlName="nextDayCustom" display-format="h:mm A" picker-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onNextDateChange($event.detail.value)"
-          (ionCancel)="onNextDateCancel()"></ion-datetime>
+        <ion-datetime #nextdayDatePicker formControlName="nextDayCustom" display-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onNextDateChange($event.detail.value)" (ionCancel)="onNextDateCancel()"></ion-datetime>
       </ion-item>
     </ion-card>
     <ion-list lines="none">

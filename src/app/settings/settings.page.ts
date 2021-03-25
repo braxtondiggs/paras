@@ -91,7 +91,7 @@ export class SettingsPage implements OnInit {
     let t: HTMLIonToastElement;
     const createdAt = this.isFirst ? new Date() : null;
     data = omitBy({ ...data, token: this.fcm.token, type: 'NYC', updateAt: new Date(), createdAt }, isNil);
-    if (isEmpty(data.token)) {
+    if (!isEmpty(data.token)) {
       this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
         t = await this.toast.create({
           color: 'dark',

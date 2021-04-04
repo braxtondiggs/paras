@@ -89,7 +89,8 @@ body.dark {
   ion-calendar {
     background: initial !important;
 
-    button.days-btn p {
+    button.days-btn p,
+    .month-packer-item button {
       color: var(--ion-color-step-900) !important;
     }
   }

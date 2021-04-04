@@ -12,7 +12,7 @@ export class DbService {
 
   collection$(path: string, query?: QueryFn): Observable<any> {
     return this.afs.collection(path, query).snapshotChanges().pipe(map(actions => {
-      return actions.map(a => {
+      return actions.map((a: any) => {
         const data: Object = a.payload.doc.data();
         const id = a.payload.doc.id;
         return { id, ...data };
@@ -21,7 +21,7 @@ export class DbService {
   }
 
   doc$(path: string): Observable<any> {
-    return this.afs.doc(path).snapshotChanges().pipe(map(doc => {
+    return this.afs.doc(path).snapshotChanges().pipe(map((doc: any) => {
       return { id: doc.payload.id, ...doc.payload.data() as Object };
     }));
   }

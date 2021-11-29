@@ -41,10 +41,10 @@
     "ion2-calendar": "git+https://github.com/shaneparsons/ion2-calendar.git#76ae1e241183500a377647b363c931a03aa50bca",
     "lodash-es": "^4.17.15",
     "moment": "^2.29.1",
+    "rxfire": "^6.0.0",
     "rxjs": "^6.6.3",
     "tslib": "^2.0.0",
-    "zone.js": "~0.11.4",
-    "rxfire": "^6.0.0"
+    "zone.js": "~0.11.4"
   },
   "devDependencies": {
     "@angular-devkit/architect": "^0.1202.13",

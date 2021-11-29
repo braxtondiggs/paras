@@ -9,11 +9,11 @@ dayjs.tz.setDefault('America/New_York');
 export async function getNYCalender(): Promise<any> {
   // const uri = 'https://www1.nyc.gov/html/dot/html/motorist/alternate-side-parking.shtml';
   const year = 2021;
-  const $: cheerio.Root = cheerio.load(getHTML());
+  const $ = cheerio.load(getHTML());
   const promise: Promise<FirebaseFirestore.WriteResult>[] = [];
-  $('table tbody tr').each((_, tr) => {
+  $('table tbody tr').each((_: any, tr: any) => {
     const data: string[] = [];
-    $('td', tr).each((__, td) => data.push($(td).text()));
+    $('td', tr).each((__: any, td: any) => { data.push($(td).text()) });
     if (data[0].includes('-')) {
       const date = split(data[0], ', ')[1];
       const range = split(date, '-');

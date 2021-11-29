@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFireMessaging } from '@angular/fire/messaging';
+import { AngularFireMessaging } from '@angular/fire/compat/messaging';
 import { FirebaseX } from '@ionic-native/firebase-x/ngx';
 import { Platform } from '@ionic/angular';
 import { from, Observable } from 'rxjs';

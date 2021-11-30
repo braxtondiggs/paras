@@ -6,7 +6,6 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { LaunchReview } from '@ionic-native/launch-review/ngx';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
-import { EmailComposer } from '@ionic-native/email-composer/ngx';
 import { SettingsPage } from './settings.page';
 
 @NgModule({
@@ -23,6 +22,6 @@ import { SettingsPage } from './settings.page';
     ])
   ],
   declarations: [SettingsPage],
-  providers: [EmailComposer, LaunchReview, InAppPurchase2]
+  providers: [LaunchReview, InAppPurchase2]
 })
 export class SettingsPageModule { }

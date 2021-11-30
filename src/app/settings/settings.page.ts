@@ -7,7 +7,7 @@ import { distinctUntilChanged, take } from 'rxjs/operators';
 import { AlertController, IonDatetime, LoadingController, ToastController } from '@ionic/angular';
 import { LaunchReview } from '@ionic-native/launch-review/ngx';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
-import { EmailComposer } from '@ionic-native/email-composer/ngx';
+import { EmailComposer } from 'capacitor-email-composer';
 import * as moment from 'moment';
 
 @Component({
@@ -29,7 +29,6 @@ export class SettingsPage implements OnInit {
     private alert: AlertController,
     private auth: AuthService,
     private db: DbService,
-    private email: EmailComposer,
     private launchReview: LaunchReview,
     private loading: LoadingController,
     private store: InAppPurchase2,
@@ -61,7 +60,7 @@ export class SettingsPage implements OnInit {
         loading.dismiss();
       });
     });
-
+    
     this.settingsForm.controls.today.valueChanges.pipe(distinctUntilChanged()).subscribe(async (today) => {
       if (!today) { return; }
       if (today === 'custom') {
@@ -187,7 +186,7 @@ export class SettingsPage implements OnInit {
         }, {
           text: 'Contact Us',
           handler: () => {
-            this.email.open({ to: 'braxtondiggs@gmail.com', subject: 'ASP for NYC' });
+            EmailComposer.open({ to: ['braxtondiggs@gmail.com'], subject: 'ASP for NYC' });
           }
         }
       ]

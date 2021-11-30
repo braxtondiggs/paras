@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">paras</string>
+    <string name="title_activity_main">paras</string>
+    <string name="package_name">com.cymbit.paras</string>
+    <string name="custom_url_scheme">com.cymbit.paras</string>
+</resources>

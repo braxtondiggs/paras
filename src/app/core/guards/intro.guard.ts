@@ -7,8 +7,8 @@ import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from
 export class IntroGuard implements CanActivate {
   constructor(private router: Router) { }
   async canActivate(
-    next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Promise<boolean> {
+    _next: ActivatedRouteSnapshot,
+    _state: RouterStateSnapshot): Promise<boolean> {
     if (!localStorage.getItem('intro')) {
       this.router.navigate(['intro']);
       return false;

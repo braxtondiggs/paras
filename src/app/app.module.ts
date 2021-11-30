@@ -3,26 +3,20 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-import { FirebaseX } from '@ionic-native/firebase-x/ngx';
-import { Network } from '@ionic-native/network/ngx';
-import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { AngularFireModule } from '@angular/fire/compat';
-import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { environment } from '../environments/environment';
-import { AuthService, DbService, FcmService } from './core/services';
+import { AuthService, DbService } from './core/services';
 
 @NgModule({
   declarations: [AppComponent],
   imports: [
     AngularFireAuthModule,
-    AngularFireMessagingModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AppRoutingModule,
@@ -32,11 +26,6 @@ import { AuthService, DbService, FcmService } from './core/services';
   providers: [
     AuthService,
     DbService,
-    FcmService,
-    FirebaseX,
-    Network,
-    SplashScreen,
-    StatusBar,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

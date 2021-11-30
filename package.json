@@ -22,6 +22,14 @@
     "@angular/platform-browser": "^12.2.13",
     "@angular/platform-browser-dynamic": "^12.2.13",
     "@angular/router": "^12.2.13",
+    "@capacitor/android": "3.3.2",
+    "@capacitor/app": "^1.0.6",
+    "@capacitor/core": "^3.3.2",
+    "@capacitor/haptics": "^1.1.3",
+    "@capacitor/network": "^1.0.6",
+    "@capacitor/push-notifications": "^1.0.7",
+    "@capacitor/splash-screen": "^1.1.6",
+    "@capacitor/status-bar": "^1.0.6",
     "@ionic-native/core": "^5.28.0",
     "@ionic-native/email-composer": "^5.28.0",
     "@ionic-native/firebase-x": "^5.28.0",
@@ -29,13 +37,8 @@
     "@ionic-native/launch-review": "^5.28.0",
     "@ionic-native/network": "^5.28.0",
     "@ionic-native/splash-screen": "^5.28.0",
-    "@ionic-native/status-bar": "^5.28.0",
     "@ionic/angular": "^5.3.5",
-    "cordova-custom-config": "^5.1.0",
-    "cordova-plugin-network-information": "^2.0.2",
-    "cordova-plugin-splashscreen": "^6.0.0",
-    "cordova-plugin-statusbar": "^2.4.3",
-    "cordova-plugin-whitelist": "^1.3.3",
+    "cordova-plugin-email-composer": "^0.10.0",
     "core-js": "^2.5.4",
     "firebase": "^9.4.0",
     "ion2-calendar": "git+https://github.com/shaneparsons/ion2-calendar.git#76ae1e241183500a377647b363c931a03aa50bca",
@@ -55,19 +58,14 @@
     "@angular/compiler": "^12.2.13",
     "@angular/compiler-cli": "^12.2.13",
     "@angular/language-service": "^12.2.13",
-    "@ionic/angular-toolkit": "^2.3.3",
+    "@capacitor/cli": "^3.3.2",
+    "@ionic/angular-toolkit": "^5.0.3",
     "@types/jasmine": "~3.3.8",
     "@types/jasminewd2": "~2.0.3",
     "@types/lodash-es": "^4.17.3",
     "@types/node": "^12.12.67",
     "codelyzer": "^6.0.1",
     "cordova-android": "^9.0.0",
-    "cordova-launch-review": "^4.0.0",
-    "cordova-plugin-device": "^2.0.3",
-    "cordova-plugin-email-composer": "git+https://github.com/adityasingh0208/cordova-plugin-email-composer.git",
-    "cordova-plugin-firebasex": "^11.0.3",
-    "cordova-plugin-ionic-webview": "^5.0.0",
-    "cordova-plugin-purchase": "^10.3.0",
     "jasmine-core": "~3.5.0",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~6.3.9",
@@ -83,39 +81,15 @@
   "description": "Get updates on alternate street parking rules & schedules with NYC parking app.",
   "cordova": {
     "plugins": {
-      "cordova-plugin-whitelist": {},
-      "cordova-custom-config": {},
-      "cordova-plugin-ionic-webview": {
-        "ANDROID_SUPPORT_ANNOTATIONS_VERSION": "27.+"
+      "cordova-launch-review": {
+        "ANDROID_PLAY_SERVICES_CORE_VERSION": "1.8.0"
       },
-      "cordova-plugin-statusbar": {},
-      "cordova-plugin-splashscreen": {},
-      "cordova-plugin-network-information": {},
-      "cordova-plugin-firebasex": {
-        "FIREBASE_ANALYTICS_COLLECTION_ENABLED": "true",
-        "FIREBASE_PERFORMANCE_COLLECTION_ENABLED": "true",
-        "FIREBASE_CRASHLYTICS_COLLECTION_ENABLED": "true",
-        "ANDROID_ICON_ACCENT": "#FF00FFFF",
-        "ANDROID_FIREBASE_PERFORMANCE_MONITORING": "false",
-        "ANDROID_PLAY_SERVICES_TAGMANAGER_VERSION": "17.0.0",
-        "ANDROID_PLAY_SERVICES_AUTH_VERSION": "18.1.0",
-        "ANDROID_FIREBASE_ANALYTICS_VERSION": "17.5.0",
-        "ANDROID_FIREBASE_MESSAGING_VERSION": "20.3.0",
-        "ANDROID_FIREBASE_CONFIG_VERSION": "19.2.0",
-        "ANDROID_FIREBASE_PERF_VERSION": "19.0.9",
-        "ANDROID_FIREBASE_AUTH_VERSION": "19.4.0",
-        "ANDROID_FIREBASE_INAPPMESSAGING_VERSION": "19.1.1",
-        "ANDROID_FIREBASE_FIRESTORE_VERSION": "21.7.0",
-        "ANDROID_FIREBASE_CRASHLYTICS_VERSION": "17.2.2",
-        "ANDROID_FIREBASE_CRASHLYTICS_NDK_VERSION": "17.2.2",
-        "ANDROID_GSON_VERSION": "2.8.6",
-        "ANDROID_FIREBASE_PERF_GRADLE_PLUGIN_VERSION": "1.3.1"
-      },
-      "cordova-launch-review": {},
       "cordova-plugin-purchase": {
         "BILLING_KEY": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwuM/ArM7gtw7mPH/K65/mb+W0U5ViehZ5xgHzKEDYSQ0PPTqylCnOxkubAWEWGPvdVDpirXHmgeRbuTZrRyZAV9Dc+BJI+ahh5e9/9u118e50XXT/Zo1z3oGblpfo68FY6btM2UxEQ7U/2U1J2Cxl7j/uhRrakJMO9U5BpZy7FWULEa1pfJTUlJxDqVRaHUIiMED62KKBylIEorKDDSy04wsA03bbh36FK4ftLr4nKCTB1y4Uyz1QSUipDgAje1QDPPiSYAHhTe/RHlLZZoIOacW8OSZgZtjnFEAj/IU6Udu+Z6gS19n3gwPG1UrN0+u4bBftV8ZkeoRliV5Q/GmRQIDAQAB"
       },
-      "cordova-plugin-email-composer": {}
+      "cordova-plugin-email-composer": {
+        "ANDROID_SUPPORT_V4_VERSION": "28.+"
+      }
     },
     "platforms": [
       "android"

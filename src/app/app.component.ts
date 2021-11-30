@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { FcmService } from './core/services';
 import { Platform, AlertController } from '@ionic/angular';
-import { Network } from '@ionic-native/network/ngx';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
-import { SplashScreen } from '@ionic-native/splash-screen/ngx';
+import { ActionPerformed, PushNotificationSchema, PushNotifications, Token } from '@capacitor/push-notifications';
+import { Network } from '@capacitor/network';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { SplashScreen } from '@capacitor/splash-screen';
 
 @Component({
   selector: 'app-root',
@@ -11,33 +11,46 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
   styleUrls: ['app.component.scss']
 })
 export class AppComponent {
-  constructor(
-    private alert: AlertController,
-    private fcm: FcmService,
-    private network: Network,
-    private platform: Platform,
-    private statusBar: StatusBar,
-    private splashScreen: SplashScreen
-  ) {
+  constructor(private alert: AlertController, private platform: Platform) {
     this.initializeApp();
     this.setTheme();
   }
 
   private async initializeApp() {
     await this.platform.ready();
-    if (this.platform.is('cordova')) {
-      if (this.network.type !== 'none') {
-        this.statusBar.styleLightContent();
-        this.fcm.getPermission().subscribe(() => {
-          setTimeout(() => this.splashScreen.hide(), 4000);
-          this.fcm.listenToMessages().subscribe();
-        });
-      } else {
-        await this.showNetworkAlert();
-      }
-    }
+    if (!this.platform.is('cordova')) return;
+    if (!await Network.getStatus()) await this.showNetworkAlert();
+    await StatusBar.setStyle({ style: Style.Light });
+    setTimeout(async () => await SplashScreen.hide(), 4000);
+    this.getFCMNotification();
   }
 
+  private getFCMNotification() {
+    PushNotifications.requestPermissions().then(result => {
+      if (result.receive === 'granted') {
+        // Register with Apple / Google to receive push via APNS/FCM
+        PushNotifications.register();
+      } else {
+        // Show some error
+      }
+    });
+
+    PushNotifications.addListener('registration', (token: Token) => {
+      alert('Push registration success, token: ' + token.value);
+    });
+
+    PushNotifications.addListener('registrationError', (error: any) => {
+      alert('Error on registration: ' + JSON.stringify(error));
+    });
+
+    PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+      alert('Push received: ' + JSON.stringify(notification));
+    });
+
+    PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
+        alert('Push action performed: ' + JSON.stringify(notification));
+    });
+  }
   private setTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     if (!localStorage.getItem('darkMode')) { localStorage.setItem('darkMode', prefersDark.matches.toString()); }

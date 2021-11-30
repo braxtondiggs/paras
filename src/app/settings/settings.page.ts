@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { DbService, AuthService, FcmService } from '../core/services';
+import { DbService, AuthService } from '../core/services';
 import { Setting } from '../core/interface';
 import { omitBy, isNil, isEmpty } from 'lodash-es';
 import { distinctUntilChanged, take } from 'rxjs/operators';
@@ -30,7 +30,6 @@ export class SettingsPage implements OnInit {
     private auth: AuthService,
     private db: DbService,
     private email: EmailComposer,
-    private fcm: FcmService,
     private launchReview: LaunchReview,
     private loading: LoadingController,
     private store: InAppPurchase2,
@@ -89,8 +88,8 @@ export class SettingsPage implements OnInit {
 
   save(data: Setting): void {
     let t: HTMLIonToastElement;
-    const createdAt = this.isFirst ? new Date() : null;
-    data = omitBy({ ...data, token: this.fcm.token, type: 'NYC', updateAt: new Date(), createdAt }, isNil);
+    const createdAt = this.isFirst ? new Date() : null; //token: this.fcm.token
+    data = omitBy({ ...data, type: 'NYC', updateAt: new Date(), createdAt }, isNil);
     if (!isEmpty(data.token)) {
       this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
         t = await this.toast.create({

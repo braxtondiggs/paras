@@ -24,6 +24,7 @@
 @import '~@ionic/angular/css/text-alignment.css';
 @import '~@ionic/angular/css/text-transformation.css';
 @import '~@ionic/angular/css/flex-utils.css';
+@import 'swiper/scss';
 
 ion-toolbar {
   --background-color: transparent;
@@ -94,4 +95,8 @@ body.dark {
       color: var(--ion-color-step-900) !important;
     }
   }
+}
+
+ion-picker ion-picker-column.picker-col {
+  flex: 0 0 50px;
 }

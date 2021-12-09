@@ -1,10 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { DbService, AuthService } from '../core/services';
 import { Setting } from '../core/interface';
-import { omitBy, isNil, isEmpty } from 'lodash-es';
+import { omitBy, isNil, isEmpty, range } from 'lodash-es';
 import { distinctUntilChanged, take } from 'rxjs/operators';
-import { AlertController, IonDatetime, LoadingController, ToastController } from '@ionic/angular';
+import { AlertController, PickerController, LoadingController, ToastController } from '@ionic/angular';
 import { LaunchReview } from '@ionic-native/launch-review/ngx';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { EmailComposer } from 'capacitor-email-composer';
@@ -22,8 +22,6 @@ export class SettingsPage implements OnInit {
   isLoading = true;
   format = 'H:mm';
   isFirst = false;
-  @ViewChild('todayDatePicker') today: IonDatetime;
-  @ViewChild('nextdayDatePicker') nextday: IonDatetime;
   constructor(
     fb: FormBuilder,
     private alert: AlertController,
@@ -31,13 +29,12 @@ export class SettingsPage implements OnInit {
     private db: DbService,
     private launchReview: LaunchReview,
     private loading: LoadingController,
+    private picker: PickerController,
     private store: InAppPurchase2,
     private toast: ToastController) {
     this.settings = {
       today: 'none',
-      todayCustom: moment().format(),
       nextDay: 'none',
-      nextDayCustom: moment().format(),
       exceptionOnly: false,
       weekend: false,
       darkMode: localStorage.getItem('darkMode') === 'true'
@@ -60,11 +57,11 @@ export class SettingsPage implements OnInit {
         loading.dismiss();
       });
     });
-    
+
     this.settingsForm.controls.today.valueChanges.pipe(distinctUntilChanged()).subscribe(async (today) => {
       if (!today) { return; }
       if (today === 'custom') {
-        await this.today.open();
+        this.openTimePicker('today');
       } else {
         this.save({ today });
       }
@@ -73,7 +70,7 @@ export class SettingsPage implements OnInit {
     this.settingsForm.controls.nextDay.valueChanges.pipe(distinctUntilChanged()).subscribe(async (nextDay) => {
       if (!nextDay) { return; }
       if (nextDay === 'custom') {
-        await this.nextday.open();
+        this.openTimePicker('nextDay');
       } else {
         this.save({ nextDay });
       }
@@ -130,19 +127,9 @@ export class SettingsPage implements OnInit {
   }
 
   async onTodayChange(date: string) {
-    if (moment(date, 'YYYY-MM-DD HH:mmZ').isBefore(moment().set({ hour: 7, minute: 29 }))) {
-      const alert = await this.alert.create({
-        header: 'Invalid Time',
-        message: 'The time you have selected is too early, please select a time before 7:30AM.',
-        buttons: [{
-          text: 'Okay',
-          handler: () => this.settingsForm.controls.today.patchValue(this.settings.today)
-        }]
-      });
-      await alert.present();
-      return;
-    }
-    this.save({ today: this.settingsForm.value.today, todayCustom: moment(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
+    const maxTime = moment().set({ hour: 7, minute: 29 });
+    if (moment(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
+    this.save({ today: this.settingsForm.value.today, todayCustom: moment(date, 'h:mmA').format(this.format) });
   }
 
   onTodayCancel() {
@@ -150,19 +137,9 @@ export class SettingsPage implements OnInit {
   }
 
   async onNextDateChange(date: string) {
-    if (moment(date, 'YYYY-MM-DD HH:mmZ').isBefore(moment().set({ hour: 15, minute: 59 }))) {
-      const alert = await this.alert.create({
-        header: 'Invalid Time',
-        message: 'The time you have selected is too early, please select a time before 4:00PM.',
-        buttons: [{
-          text: 'Okay',
-          handler: () => this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay)
-        }]
-      });
-      await alert.present();
-      return;
-    }
-    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: moment(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
+    const maxTime = moment().set({ hour: 15, minute: 59 });
+    if (moment(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
+    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: moment(date, 'h:mmA').format(this.format) });
   }
 
   onNextDateCancel() {
@@ -186,7 +163,7 @@ export class SettingsPage implements OnInit {
         }, {
           text: 'Contact Us',
           handler: () => {
-            EmailComposer.open({ to: ['braxtondiggs@gmail.com'], subject: 'ASP for NYC' });
+            EmailComposer.open({ to: ['braxtondiggs@gmail.com'], subject: 'ASP for NYC', isHtml: false, body: '' });
           }
         }
       ]
@@ -231,5 +208,68 @@ export class SettingsPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  private async showAlert(maxTime: moment.Moment) {
+    const time: string = maxTime.add(1, 'm').format('h:mm A').toString();
+    const alert = await this.alert.create({
+      header: 'Invalid Time',
+      message: `The time you have selected is too early, please select a time before ${time}.`,
+      buttons: [{
+        text: 'Okay',
+        handler: () => this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay)
+      }]
+    });
+    await alert.present();
+  }
+
+  private async openTimePicker(action: string = 'today') {
+    const picker = await this.picker.create({
+      buttons: [{
+        text: 'Cancel',
+      }, {
+        text: 'Done',
+        handler: (o) => {
+          const date = `${o.hours.text}:${o.minutes.text}${o.periods.text}`;
+          if (action === 'today') this.onTodayChange(date);
+          if (action === 'nextDay') this.onNextDateChange(date);
+        },
+      }],
+      columns: [
+        {
+          name: 'hours',
+          options: range(1, 13).map(o => ({ text: o.toString() }))
+        },
+        {
+          name: 'minutes',
+          options: [
+            {
+              text: '00',
+            },
+            {
+              text: '15'
+            },
+            {
+              text: '30'
+            },
+            {
+              text: '45'
+            }
+          ]
+        },
+        {
+          name: 'periods',
+          options: [
+            {
+              text: 'AM'
+            },
+            {
+              text: 'PM'
+            }
+          ]
+        },
+      ]
+    });
+    await picker.present();
   }
 }

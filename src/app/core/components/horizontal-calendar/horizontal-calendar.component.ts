@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonSlides } from '@ionic/angular';
 import { concat, filter, first, orderBy, last } from 'lodash-es';
 import { DbService } from '../../services';
 import { Calendar, Feed } from '../../interface';
 import { LoadingController } from '@ionic/angular';
+import { SwiperOptions } from 'swiper';
+import { SwiperComponent } from 'swiper/angular';
 import * as moment from 'moment';
 @Component({
   selector: 'horizontal-calendar',
@@ -11,14 +12,14 @@ import * as moment from 'moment';
   styleUrls: ['./horizontal-calendar.component.scss'],
 })
 export class HorizontalCalendarComponent implements OnInit {
-  @ViewChild('slider') slider: IonSlides;
+  @ViewChild('swiper', { static: false }) swiper?: SwiperComponent;
   loading: any;
   isLoading = true;
   selected: Feed | moment.Moment;
   feed: Feed[];
   active: Calendar;
   items: Calendar[] = [];
-  slideOpts = {
+  swiperOpts: SwiperOptions = {
     centeredSlides: true,
     initialSlide: 6,
     slidesPerView: 7,
@@ -30,12 +31,13 @@ export class HorizontalCalendarComponent implements OnInit {
     this.loading = await this.loadingCtl.create();
     this.loading.present();
     this.items = this.getDatesBetween();
-    this.active = this.items[this.slideOpts.initialSlide];
+    this.active = this.items[this.swiperOpts.initialSlide];
     this.getData();
   }
 
   async onSlideChange() {
-    const index = await this.slider.getActiveIndex();
+    if (!this.swiper) return;
+    const index = this.swiper.swiperRef.activeIndex;
     if (this.items.length - 3 <= index) {
       await this.slideEnd();
     } else if (index <= 2) {
@@ -67,7 +69,7 @@ export class HorizontalCalendarComponent implements OnInit {
 
   private async slideStart() {
     const date = first(this.items);
-    await this.slider.slideTo(7, 0);
+    await this.swiper.swiperRef.slideTo(7, 0);
     const start = moment(date.text).subtract(5, 'days');
     this.items = concat(this.getDatesBetween(start, moment(date.text).subtract(1, 'days')));
   }

@@ -14,18 +14,11 @@
           <h2>Current Day Notification</h2>
           <ion-note>{{ getNotificationMessage('today', this.settingsForm.value.today) }}</ion-note>
         </ion-label>
-        <ion-select formControlName="today" [interfaceOptions]="{header: 'Current Day Notification'}">
+        <ion-select formControlName="today" interface="popover">
           <ion-select-option value="none">None</ion-select-option>
           <ion-select-option value="immediately">Immediately</ion-select-option>
           <ion-select-option value="custom">Custom</ion-select-option>
         </ion-select>
-      </ion-item>
-      <ion-item [hidden]="true">
-        <ion-label class="ion-text-wrap">
-          <h2>Custom Time</h2>
-          <ion-note>The time you would like to receive a notification</ion-note>
-        </ion-label>
-        <ion-datetime #todayDatePicker formControlName="todayCustom" display-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onTodayChange($event.detail.value)" (ionCancel)="onTodayCancel()"></ion-datetime>
       </ion-item>
     </ion-card>
     <ion-card>
@@ -34,18 +27,11 @@
           <h2>Next Day Notification</h2>
           <ion-note>{{ getNotificationMessage('nextday', this.settingsForm.value.nextDay) }}</ion-note>
         </ion-label>
-        <ion-select formControlName="nextDay" [interfaceOptions]="{header: 'Next Day Notification'}">
+        <ion-select formControlName="nextDay" interface="popover">
           <ion-select-option value="none">None</ion-select-option>
           <ion-select-option value="immediately">Immediately</ion-select-option>
           <ion-select-option value="custom">Custom</ion-select-option>
         </ion-select>
-      </ion-item>
-      <ion-item [hidden]="true">
-        <ion-label class="ion-text-wrap">
-          <h2>Custom Time</h2>
-          <ion-note>The time you would like to receive a notification</ion-note>
-        </ion-label>
-        <ion-datetime #nextdayDatePicker formControlName="nextDayCustom" display-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onNextDateChange($event.detail.value)" (ionCancel)="onNextDateCancel()"></ion-datetime>
       </ion-item>
     </ion-card>
     <ion-list lines="none">

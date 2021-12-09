@@ -1,9 +1,11 @@
 import { Component, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, CalendarComponent } from 'ion2-calendar';
-import { ModalController, IonSlides } from '@ionic/angular';
-import { DbService } from '../core/services';
+import { ModalController } from '@ionic/angular';
+import { SwiperOptions } from 'swiper';
+import { SwiperComponent } from 'swiper/angular';
 import { map } from 'rxjs/operators';
+import { DbService } from '../core/services';
+import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, CalendarComponent } from 'ion2-calendar';
 import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
 import { Feed } from '../core/interface';
 import * as moment from 'moment';
@@ -17,7 +19,7 @@ export class HomePage implements AfterViewInit {
   index = true; // TODO: Save using storage config
   date: string = moment().format();
   items: Feed[];
-  slideOpts = {
+  swiperOpts: SwiperOptions = {
     allowTouchMove: false,
     initialSlide: this.location.path().includes('calendar') ? 1 : 0
   };
@@ -27,7 +29,7 @@ export class HomePage implements AfterViewInit {
     to: moment().year(2021).endOf('year').toDate()
   };
   @ViewChild('calendar') cal: CalendarComponent;
-  @ViewChild('slider') slider: IonSlides;
+  @ViewChild('swiper', { static: false }) swiper?: SwiperComponent;
 
   constructor(private db: DbService, private modal: ModalController, private location: Location) { }
 
@@ -39,8 +41,6 @@ export class HomePage implements AfterViewInit {
         item
       }
     });
-
-    modal.onDidDismiss().then(() => this.date = null);
     return await modal.present();
   }
 
@@ -54,7 +54,7 @@ export class HomePage implements AfterViewInit {
 
   switchCalenderView() {
     this.index = !this.index;
-    this.slider.slideTo(this.index ? 0 : 1);
+    this.swiper.swiperRef.slideTo(this.index ? 0 : 1);
     this.location.replaceState(`/home${this.index ? '' : '/calendar'}`);
   }
 

@@ -3,11 +3,12 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { DbService, AuthService } from '../core/services';
 import { Setting } from '../core/interface';
 import { omitBy, isNil, isEmpty, range } from 'lodash-es';
-import { distinctUntilChanged, take } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
 import { AlertController, PickerController, LoadingController, ToastController } from '@ionic/angular';
-import { LaunchReview } from '@ionic-native/launch-review/ngx';
-import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
+import { Storage } from '@capacitor/storage';
 import { EmailComposer } from 'capacitor-email-composer';
+import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
+import { InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
 import * as moment from 'moment';
 
 @Component({
@@ -37,17 +38,20 @@ export class SettingsPage implements OnInit {
       nextDay: 'none',
       exceptionOnly: false,
       weekend: false,
-      darkMode: localStorage.getItem('darkMode') === 'true'
+      darkMode: false
     };
     this.settingsForm = fb.group(this.settings);
   }
 
   async ngOnInit() {
-    this.uid = await this.auth.uid();
     const loading = await this.loading.create();
     loading.present();
+    this.uid = await this.auth.uid();
+    const { value } = await Storage.get({ key: 'darkMode' });
+    if (value === 'true') this.settings.darkMode = true;
     this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe((settings: Setting) => {
       this.isFirst = isEmpty(settings.updateAt);
+      console.log(settings);
       if (settings.todayCustom) settings.todayCustom = moment().set(this.getTime(settings.todayCustom)).format();
       if (settings.nextDayCustom) settings.nextDayCustom = moment().set(this.getTime(settings.nextDayCustom)).format();
       this.settings = { ...this.settings, ...settings };
@@ -58,26 +62,20 @@ export class SettingsPage implements OnInit {
       });
     });
 
-    this.settingsForm.controls.today.valueChanges.pipe(distinctUntilChanged()).subscribe(async (today) => {
-      if (!today) { return; }
-      if (today === 'custom') {
-        this.openTimePicker('today');
-      } else {
-        this.save({ today });
-      }
+    this.settingsForm.controls.today.valueChanges.subscribe(today => {
+      if (!today) return;
+      if (today === 'custom') this.openTimePicker('today');
+      this.save({ today });
     });
 
-    this.settingsForm.controls.nextDay.valueChanges.pipe(distinctUntilChanged()).subscribe(async (nextDay) => {
-      if (!nextDay) { return; }
-      if (nextDay === 'custom') {
-        this.openTimePicker('nextDay');
-      } else {
-        this.save({ nextDay });
-      }
+    this.settingsForm.controls.nextDay.valueChanges.subscribe(nextDay => {
+      if (!nextDay) return;
+      if (nextDay === 'custom') this.openTimePicker('nextDay');
+      this.save({ nextDay });
     });
 
-    this.settingsForm.controls.darkMode.valueChanges.pipe(distinctUntilChanged()).subscribe((value) => {
-      localStorage.setItem('darkMode', value.toString());
+    this.settingsForm.controls.darkMode.valueChanges.subscribe(async (value) => {
+      await Storage.set({ key: 'darkMode', value: value.toString() });
       document.body.classList.toggle('dark', value);
     });
   }
@@ -223,12 +221,14 @@ export class SettingsPage implements OnInit {
     await alert.present();
   }
 
-  private async openTimePicker(action: string = 'today') {
+  async openTimePicker(action: string = 'today') {
     const picker = await this.picker.create({
       buttons: [{
         text: 'Cancel',
+        role: 'cancel'
       }, {
         text: 'Done',
+        role: 'save',
         handler: (o) => {
           const date = `${o.hours.text}:${o.minutes.text}${o.periods.text}`;
           if (action === 'today') this.onTodayChange(date);
@@ -271,5 +271,11 @@ export class SettingsPage implements OnInit {
       ]
     });
     await picker.present();
+
+    picker.onDidDismiss().then((event) => {
+      if (event.role === 'backdrop') {
+
+      }
+    });
   }
 }

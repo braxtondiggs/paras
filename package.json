@@ -1,6 +1,6 @@
 {
   "name": "paras",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Braxton Diggs",
   "homepage": "https://braxtondiggs.com/",
   "scripts": {
@@ -10,8 +10,11 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "rebuild": "rpm run nuke && npm i && ionic cordova prepare android",
-    "nuke": "rm -rf node_modules/ platforms/ plugins/ www/ package-lock.json"
+    "sync": "ionic capacitor sync",
+    "ios": "ionic capacitor run ios",
+    "android": "ionic capacitor run android",
+    "build:ios": "ionic capacitor build ios",
+    "build:android": "ionic capacitor build android"
   },
   "private": true,
   "dependencies": {
@@ -22,29 +25,28 @@
     "@angular/platform-browser": "^12.2.13",
     "@angular/platform-browser-dynamic": "^12.2.13",
     "@angular/router": "^12.2.13",
-    "@capacitor/android": "3.3.2",
-    "@capacitor/app": "^1.0.6",
+    "@awesome-cordova-plugins/device": "^5.37.1",
+    "@awesome-cordova-plugins/in-app-purchase-2": "^5.37.1",
+    "@awesome-cordova-plugins/launch-review": "^5.37.1",
+    "@capacitor/android": "3.3.3",
+    "@capacitor/app": "^1.0.7",
     "@capacitor/core": "^3.3.2",
     "@capacitor/haptics": "^1.1.3",
     "@capacitor/network": "^1.0.6",
     "@capacitor/push-notifications": "^1.0.7",
-    "@capacitor/splash-screen": "^1.1.6",
-    "@capacitor/status-bar": "^1.0.6",
-    "@ionic-native/core": "^5.28.0",
-    "@ionic-native/firebase-x": "^5.28.0",
-    "@ionic-native/in-app-purchase-2": "^5.28.0",
-    "@ionic-native/launch-review": "^5.28.0",
-    "@ionic-native/network": "^5.28.0",
-    "@ionic-native/splash-screen": "^5.28.0",
+    "@capacitor/storage": "^1.2.3",
     "@ionic/angular": "^6.0.0",
     "capacitor-email-composer": "^1.1.2",
+    "cordova-launch-review": "^4.0.1",
+    "cordova-plugin-device": "^2.0.3",
+    "cordova-plugin-purchase": "^10.6.1",
     "core-js": "^2.5.4",
     "firebase": "^9.4.0",
     "ion2-calendar": "git+https://github.com/shaneparsons/ion2-calendar.git#76ae1e241183500a377647b363c931a03aa50bca",
     "lodash-es": "^4.17.15",
     "moment": "^2.29.1",
     "rxfire": "^6.0.0",
-    "rxjs": "^6.6.3",
+    "rxjs": "^7.3.0",
     "swiper": "^7.3.1",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.4"
@@ -78,18 +80,5 @@
     "tslint": "~6.1.0",
     "typescript": "~4.3.5"
   },
-  "description": "Get updates on alternate street parking rules & schedules with NYC parking app.",
-  "cordova": {
-    "plugins": {
-      "cordova-launch-review": {
-        "ANDROID_PLAY_SERVICES_CORE_VERSION": "1.8.0"
-      },
-      "cordova-plugin-purchase": {
-        "BILLING_KEY": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwuM/ArM7gtw7mPH/K65/mb+W0U5ViehZ5xgHzKEDYSQ0PPTqylCnOxkubAWEWGPvdVDpirXHmgeRbuTZrRyZAV9Dc+BJI+ahh5e9/9u118e50XXT/Zo1z3oGblpfo68FY6btM2UxEQ7U/2U1J2Cxl7j/uhRrakJMO9U5BpZy7FWULEa1pfJTUlJxDqVRaHUIiMED62KKBylIEorKDDSy04wsA03bbh36FK4ftLr4nKCTB1y4Uyz1QSUipDgAje1QDPPiSYAHhTe/RHlLZZoIOacW8OSZgZtjnFEAj/IU6Udu+Z6gS19n3gwPG1UrN0+u4bBftV8ZkeoRliV5Q/GmRQIDAQAB"
-      }
-    },
-    "platforms": [
-      "android"
-    ]
-  }
+  "description": "Get updates on alternate street parking rules & schedules with NYC parking app."
 }

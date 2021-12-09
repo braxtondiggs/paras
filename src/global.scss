@@ -100,3 +100,8 @@ body.dark {
 ion-picker ion-picker-column.picker-col {
   flex: 0 0 50px;
 }
+
+.ripple-parent {
+  position: relative;
+  overflow: hidden;
+}

@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { Platform, AlertController } from '@ionic/angular';
-import { ActionPerformed, PushNotificationSchema, PushNotifications, Token } from '@capacitor/push-notifications';
+import { PushNotificationSchema, PushNotifications, Token } from '@capacitor/push-notifications';
 import { Network } from '@capacitor/network';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { SplashScreen } from '@capacitor/splash-screen';
+import { Storage } from '@capacitor/storage';
 
 @Component({
   selector: 'app-root',
@@ -20,43 +19,48 @@ export class AppComponent {
     await this.platform.ready();
     if (!this.platform.is('cordova')) return;
     if (!await Network.getStatus()) await this.showNetworkAlert();
-    await StatusBar.setStyle({ style: Style.Light });
-    setTimeout(async () => await SplashScreen.hide(), 4000);
     this.getFCMNotification();
   }
 
   private getFCMNotification() {
     PushNotifications.requestPermissions().then(result => {
-      if (result.receive === 'granted') {
-        // Register with Apple / Google to receive push via APNS/FCM
-        PushNotifications.register();
-      } else {
-        // Show some error
-      }
+      if (result.receive === 'granted') PushNotifications.register();
     });
 
-    PushNotifications.addListener('registration', (token: Token) => {
-      alert('Push registration success, token: ' + token.value);
+    PushNotifications.addListener('registration', async (token: Token) => {
+      await Storage.set({ key: 'token', value: token.value });
     });
 
-    PushNotifications.addListener('registrationError', (error: any) => {
-      alert('Error on registration: ' + JSON.stringify(error));
+    PushNotifications.addListener('registrationError', async (error: any) => {
+      const alert = await this.alert.create({
+        header: 'ASP For NYC',
+        message: 'Notification token registration failed, you may not be able to recive push notifications or alerts!',
+        buttons: [
+          {
+            text: 'Dismiss',
+            role: 'cancel',
+            handler: async () => {
+              await Storage.set({ key: 'tokenFailure', value: 'true' });
+              await Storage.set({ key: 'tokenFailureError', value: error.toString() })
+            }
+          }
+        ]
+      });
+
+      await alert.present();
     });
 
     PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
       alert('Push received: ' + JSON.stringify(notification));
     });
-
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
-        alert('Push action performed: ' + JSON.stringify(notification));
-    });
   }
-  private setTheme() {
+  private async setTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    if (!localStorage.getItem('darkMode')) { localStorage.setItem('darkMode', prefersDark.matches.toString()); }
-    // tslint:disable-next-line: deprecation
-    this.toggleDarkTheme(localStorage.getItem('darkMode') === 'true');
-    prefersDark.addListener((mediaQuery) => this.toggleDarkTheme(mediaQuery.matches));
+    const { value } = await Storage.get({ key: 'darkMode' });
+    const darkMode = (value === 'true');
+    if (darkMode) await Storage.set({ key: 'darkMode', value: prefersDark.matches.toString() });
+    this.toggleDarkTheme(darkMode);
+    prefersDark.addEventListener('change', (mediaQuery) => this.toggleDarkTheme(mediaQuery.matches));
   }
 
   private toggleDarkTheme(shouldAdd: boolean) {

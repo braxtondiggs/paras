@@ -10,10 +10,11 @@ $main-color: darken($card-border, 30%);
   position: relative;
 
   .swiper-container {
+    padding: 0 4px;
     position: relative;
 
     .swiper {
-      margin: 0 25px;
+      margin: 0 30px;
     }
 
     ion-button {
@@ -51,11 +52,11 @@ $main-color: darken($card-border, 30%);
   border: 1px solid $card-border;
   display: flex;
   height: 45px;
-  justify-content: center;
   overflow: hidden;
 
   > div {
     display: flex;
+    flex: 1;
     flex-direction: column;
     justify-content: center;
     text-align: center;

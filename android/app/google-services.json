@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "381385318841",
+    "firebase_url": "https://paras-293d5.firebaseio.com",
+    "project_id": "paras-293d5",
+    "storage_bucket": "paras-293d5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:381385318841:android:daea5dd164816526349668",
+        "android_client_info": {
+          "package_name": "com.cymbit.paras"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "381385318841-8ogv4nm0vthbh9828vm2ffa06mejlore.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBeOtlVYAJ4LnfqxSNeRTDpKzTsrc5xKg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "381385318841-8ogv4nm0vthbh9828vm2ffa06mejlore.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

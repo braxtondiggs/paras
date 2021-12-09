@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Observable, of } from 'rxjs';
 import { switchMap, take, map } from 'rxjs/operators';
+import { Storage } from '@capacitor/storage';
 import { DbService } from './db.service';
 
 @Injectable({
@@ -17,6 +18,7 @@ export class AuthService {
 
   async anonymousLogin() {
     const credential = await this.afAuth.signInAnonymously();
+    await Storage.set({ key: 'uid', value: credential.user.uid });
     return await this.updateUserData(credential.user);
   }
 

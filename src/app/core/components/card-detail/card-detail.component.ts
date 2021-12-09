@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
-import * as moment from 'moment';
 import { Feed } from '../../interface';
+import dayjs, { Dayjs } from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 @Component({
   selector: 'app-card-detail',
@@ -9,19 +10,20 @@ import { Feed } from '../../interface';
 })
 export class CardDetailComponent implements OnChanges {
   detail: Item;
-  @Input() item: Feed & moment.Moment;
+  @Input() item: Feed | Dayjs;
 
   ngOnChanges(changes: SimpleChanges) {
+    dayjs.extend(relativeTime);
     const currentItem: SimpleChange = changes.item;
     if (currentItem.currentValue) {
-      const data: Feed | moment.Moment = changes.item.currentValue;
-      if (!moment.isMoment(data)) {
+      const data: Feed | Dayjs = changes.item.currentValue;
+      if (!dayjs.isDayjs(data)) {
         this.detail = {
           ...data,
-          created: moment(data.created.toDate()).fromNow(),
-          date: moment(data.date.toDate()).format('MMMM Do YYYY'),
-          lastUpdated: moment(data.date.toDate()).isSame(moment(), 'day') ||
-            moment(data.date.toDate()).isSame(moment().add(1, 'days'), 'day')
+          created: dayjs(data.created.toDate()).fromNow(),
+          date: dayjs(data.date.toDate()).format('MMMM Do YYYY'),
+          lastUpdated: dayjs(data.date.toDate()).isSame(dayjs(), 'day') ||
+          dayjs(data.date.toDate()).isSame(dayjs().add(1, 'day'), 'day')
         };
       } else {
         this.detail = {
@@ -29,7 +31,7 @@ export class CardDetailComponent implements OnChanges {
           created: data.fromNow(),
           date: data.format('MMMM Do YYYY'),
           metered: true,
-          lastUpdated: data.isSame(moment(), 'day')
+          lastUpdated: data.isSame(dayjs(), 'day')
         };
       }
     }

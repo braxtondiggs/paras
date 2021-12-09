@@ -9,7 +9,8 @@ import { Storage } from '@capacitor/storage';
 import { EmailComposer } from 'capacitor-email-composer';
 import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
 import { InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
-import * as moment from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
+import objectSupport from 'dayjs/plugin/objectSupport';
 
 @Component({
   selector: 'app-settings',
@@ -33,6 +34,7 @@ export class SettingsPage implements OnInit {
     private picker: PickerController,
     private store: InAppPurchase2,
     private toast: ToastController) {
+    dayjs.extend(objectSupport);
     this.settings = {
       today: 'none',
       nextDay: 'none',
@@ -52,8 +54,8 @@ export class SettingsPage implements OnInit {
     this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe((settings: Setting) => {
       this.isFirst = isEmpty(settings.updateAt);
       console.log(settings);
-      if (settings.todayCustom) settings.todayCustom = moment().set(this.getTime(settings.todayCustom)).format();
-      if (settings.nextDayCustom) settings.nextDayCustom = moment().set(this.getTime(settings.nextDayCustom)).format();
+      if (settings.todayCustom) settings.todayCustom = dayjs().set(this.getTime(settings.todayCustom)).format();
+      if (settings.nextDayCustom) settings.nextDayCustom = dayjs().set(this.getTime(settings.nextDayCustom)).format();
       this.settings = { ...this.settings, ...settings };
       this.settingsForm.patchValue(this.settings, { emitEvent: false, onlySelf: true });
       setTimeout(() => {
@@ -105,7 +107,7 @@ export class SettingsPage implements OnInit {
   }
 
   private getTime(time: string): { hour: number, minute: number } {
-    if (!time) return { hour: moment().get('hour'), minute: moment().get('minute') };
+    if (!time) return { hour: dayjs().get('hour'), minute: dayjs().get('minute') };
     const [hour, minute] = time.split(':');
     return { hour: +hour, minute: +minute };
   }
@@ -118,16 +120,16 @@ export class SettingsPage implements OnInit {
       case 'immediately':
         return `Next notification around ${type === 'today' ? '7:30AM' : '4:00PM'}`;
       case 'custom':
-        return `Next notification at ${moment(time).format('h:mm A')}`;
+        return `Next notification at ${dayjs(time).format('h:mm A')}`;
       default:
         break;
     }
   }
 
   async onTodayChange(date: string) {
-    const maxTime = moment().set({ hour: 7, minute: 29 });
-    if (moment(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
-    this.save({ today: this.settingsForm.value.today, todayCustom: moment(date, 'h:mmA').format(this.format) });
+    const maxTime = dayjs().set({ hour: 7, minute: 29 });
+    if (dayjs(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
+    this.save({ today: this.settingsForm.value.today, todayCustom: dayjs(date, 'h:mmA').format(this.format) });
   }
 
   onTodayCancel() {
@@ -135,9 +137,9 @@ export class SettingsPage implements OnInit {
   }
 
   async onNextDateChange(date: string) {
-    const maxTime = moment().set({ hour: 15, minute: 59 });
-    if (moment(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
-    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: moment(date, 'h:mmA').format(this.format) });
+    const maxTime = dayjs().set({ hour: 15, minute: 59 });
+    if (dayjs(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
+    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: dayjs(date, 'h:mmA').format(this.format) });
   }
 
   onNextDateCancel() {
@@ -208,8 +210,8 @@ export class SettingsPage implements OnInit {
     await alert.present();
   }
 
-  private async showAlert(maxTime: moment.Moment) {
-    const time: string = maxTime.add(1, 'm').format('h:mm A').toString();
+  private async showAlert(maxTime: Dayjs) {
+    const time: string = maxTime.add(1, 'minute').format('h:mm A').toString();
     const alert = await this.alert.create({
       header: 'Invalid Time',
       message: `The time you have selected is too early, please select a time before ${time}.`,

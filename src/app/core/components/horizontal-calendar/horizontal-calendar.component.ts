@@ -5,7 +5,9 @@ import { Calendar, Feed } from '../../interface';
 import { LoadingController } from '@ionic/angular';
 import { SwiperOptions } from 'swiper';
 import { SwiperComponent } from 'swiper/angular';
-import * as moment from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+
 @Component({
   selector: 'horizontal-calendar',
   templateUrl: './horizontal-calendar.component.html',
@@ -15,7 +17,7 @@ export class HorizontalCalendarComponent implements OnInit {
   @ViewChild('swiper', { static: false }) swiper?: SwiperComponent;
   loading: any;
   isLoading = true;
-  selected: Feed | moment.Moment;
+  selected: Feed | Dayjs;
   feed: Feed[];
   active: Calendar;
   items: Calendar[] = [];
@@ -28,6 +30,7 @@ export class HorizontalCalendarComponent implements OnInit {
   constructor(private db: DbService, private loadingCtl: LoadingController) { }
 
   async ngOnInit() {
+    dayjs.extend(isSameOrBefore);
     this.loading = await this.loadingCtl.create();
     this.loading.present();
     this.items = this.getDatesBetween();
@@ -57,31 +60,30 @@ export class HorizontalCalendarComponent implements OnInit {
 
   private getSelectedItem(calendar: Calendar, feed: Feed[]): Feed {
     return first(orderBy(filter(feed,
-      (o => moment(o.date.toDate()).isSame(calendar.date, 'day'))),
+      (o => dayjs(o.date.toDate()).isSame(calendar.date, 'day'))),
       (o => o.date.seconds), ['asc']));
   }
 
   private async slideEnd() {
     const date = last(this.items);
-    const end = moment(date.text).add(10, 'days');
-    this.items = concat(this.items, this.getDatesBetween(moment(date.text).add(1, 'days'), end));
+    const end = dayjs(date.text).add(10, 'day');
+    this.items = concat(this.items, this.getDatesBetween(dayjs(date.text).add(1, 'day'), end));
   }
 
   private async slideStart() {
     const date = first(this.items);
     await this.swiper.swiperRef.slideTo(7, 0);
-    const start = moment(date.text).subtract(5, 'days');
-    this.items = concat(this.getDatesBetween(start, moment(date.text).subtract(1, 'days')));
+    const start = dayjs(date.text).subtract(5, 'days');
+    this.items = concat(this.getDatesBetween(start, dayjs(date.text).subtract(1, 'day')));
   }
 
-  private getDatesBetween(startDate?: moment.Moment, endDate?: moment.Moment): Calendar[] {
-    const start = startDate || moment().subtract(6, 'days');
-    const end = endDate || moment().add(6, 'days');
+  private getDatesBetween(startDate?: Dayjs, endDate?: Dayjs): Calendar[] {
+    let start = startDate || dayjs().subtract(6, 'days');
+    const end = endDate || dayjs().add(6, 'day');
     const dates: Calendar[] = [];
-
-    while (start.isBefore(end) || start.isSame(end)) {
+    while (start.isSameOrBefore(end)) {
       dates.push(this.getCalenderFormat(start));
-      start.add(1, 'days');
+      start = start.add(1, 'day');
     }
     return dates;
   }
@@ -95,7 +97,7 @@ export class HorizontalCalendarComponent implements OnInit {
         .where('date', '<', end.date)
         .where('type', '==', 'NYC'))
       .subscribe((feed) => {
-        this.selected = this.getSelectedItem(this.active, feed) || moment(this.active.date);
+        this.selected = this.getSelectedItem(this.active, feed) || dayjs(this.active.date);
         this.feed = feed;
         setTimeout(() => {
           this.isLoading = false;
@@ -104,7 +106,7 @@ export class HorizontalCalendarComponent implements OnInit {
       });
   }
 
-  private getCalenderFormat(date: moment.Moment): Calendar {
+  private getCalenderFormat(date: Dayjs): Calendar {
     return {
       text: date.format(),
       date: date.toDate(),

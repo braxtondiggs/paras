@@ -8,7 +8,7 @@ import { DbService } from '../core/services';
 import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, CalendarComponent } from 'ion2-calendar';
 import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
 import { Feed } from '../core/interface';
-import * as moment from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
 
 @Component({
   selector: 'app-home',
@@ -17,7 +17,7 @@ import * as moment from 'moment';
 })
 export class HomePage implements AfterViewInit {
   index = true; // TODO: Save using storage config
-  date: string = moment().format();
+  date: string = dayjs().format();
   items: Feed[];
   swiperOpts: SwiperOptions = {
     allowTouchMove: false,
@@ -26,7 +26,7 @@ export class HomePage implements AfterViewInit {
   calendarOpts: CalendarComponentOptions = {
     daysConfig: [],
     from: new Date(2019, 11, 1),
-    to: moment().year(2021).endOf('year').toDate()
+    to: dayjs().year(2021).endOf('year').toDate()
   };
   @ViewChild('calendar') cal: CalendarComponent;
   @ViewChild('swiper', { static: false }) swiper?: SwiperComponent;
@@ -34,7 +34,7 @@ export class HomePage implements AfterViewInit {
   constructor(private db: DbService, private modal: ModalController, private location: Location) { }
 
   async onSelect(date: string) {
-    const item = this.items.find((o) => moment(o.date.toDate()).isSame(date, 'day')) || moment(date);
+    const item = this.items.find((o) => dayjs(o.date.toDate()).isSame(date, 'day')) || dayjs(date);
     const modal = await this.modal.create({
       component: ModalDetailComponent,
       componentProps: {
@@ -45,11 +45,11 @@ export class HomePage implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.getData(moment().startOf('month'), moment().endOf('month'));
+    this.getData(dayjs().startOf('month'), dayjs().endOf('month'));
   }
 
   onMonthChange($event: CalendarComponentMonthChange): void {
-    this.getData(moment($event.newMonth.dateObj), moment($event.newMonth.dateObj).endOf('month'));
+    this.getData(dayjs($event.newMonth.dateObj), dayjs($event.newMonth.dateObj).endOf('month'));
   }
 
   switchCalenderView() {
@@ -58,7 +58,7 @@ export class HomePage implements AfterViewInit {
     this.location.replaceState(`/home${this.index ? '' : '/calendar'}`);
   }
 
-  private getData(start: moment.Moment, end: moment.Moment) {
+  private getData(start: Dayjs, end: Dayjs) {
     this.db.collection$('feed', (ref) =>
       ref
         .where('date', '>=', start.toDate())

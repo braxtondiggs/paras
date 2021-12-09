@@ -7,6 +7,7 @@ import { SwiperOptions } from 'swiper';
 import { SwiperComponent } from 'swiper/angular';
 import dayjs, { Dayjs } from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 
 @Component({
   selector: 'horizontal-calendar',
@@ -31,6 +32,7 @@ export class HorizontalCalendarComponent implements OnInit {
 
   async ngOnInit() {
     dayjs.extend(isSameOrBefore);
+    dayjs.extend(advancedFormat);
     this.loading = await this.loadingCtl.create();
     this.loading.present();
     this.items = this.getDatesBetween();

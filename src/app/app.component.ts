@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Platform, AlertController } from '@ionic/angular';
 import { PushNotificationSchema, PushNotifications, Token } from '@capacitor/push-notifications';
+import { FirebaseAnalytics } from '@awesome-cordova-plugins/firebase-analytics/ngx';
 import { Network } from '@capacitor/network';
 import { Storage } from '@capacitor/storage';
 
@@ -10,7 +11,8 @@ import { Storage } from '@capacitor/storage';
   styleUrls: ['app.component.scss']
 })
 export class AppComponent {
-  constructor(private alert: AlertController, private platform: Platform) {
+  constructor(private alert: AlertController, private analytics: FirebaseAnalytics, private platform: Platform) {
+    this.migrateData();
     this.initializeApp();
     this.setTheme();
   }
@@ -20,6 +22,7 @@ export class AppComponent {
     if (!this.platform.is('cordova')) return;
     if (!await Network.getStatus()) await this.showNetworkAlert();
     this.getFCMNotification();
+    this.analytics.setEnabled(true);
   }
 
   private getFCMNotification() {
@@ -41,7 +44,7 @@ export class AppComponent {
             role: 'cancel',
             handler: async () => {
               await Storage.set({ key: 'tokenFailure', value: 'true' });
-              await Storage.set({ key: 'tokenFailureError', value: error.toString() })
+              await Storage.set({ key: 'tokenFailureError', value: error.toString() });
             }
           }
         ]
@@ -63,8 +66,9 @@ export class AppComponent {
     prefersDark.addEventListener('change', (mediaQuery) => this.toggleDarkTheme(mediaQuery.matches));
   }
 
-  private toggleDarkTheme(shouldAdd: boolean) {
+  private async toggleDarkTheme(shouldAdd: boolean) {
     document.body.classList.toggle('dark', shouldAdd);
+    await Storage.set({ key: 'darkMode', value: shouldAdd.toString() });
   }
 
   private async showNetworkAlert() {
@@ -75,5 +79,10 @@ export class AppComponent {
       keyboardClose: false
     });
     await alert.present();
+  }
+
+  private async migrateData() {
+    if (localStorage.getItem('intro')) { await Storage.set({ key: 'intro', value: 'true' }); localStorage.removeItem('intro'); }
+    if (localStorage.getItem('darkMode')) { await Storage.set({ key: 'darkMode', value: localStorage.getItem('darkMode') }); localStorage.removeItem('darkMode'); }
   }
 }

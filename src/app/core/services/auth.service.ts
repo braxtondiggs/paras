@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Observable, of } from 'rxjs';
 import { switchMap, take, map } from 'rxjs/operators';
+import { FirebaseAnalytics } from '@awesome-cordova-plugins/firebase-analytics/ngx';
 import { Storage } from '@capacitor/storage';
 import { DbService } from './db.service';
 
@@ -10,7 +11,7 @@ import { DbService } from './db.service';
 })
 export class AuthService {
   user$: Observable<any>;
-  constructor(private afAuth: AngularFireAuth, private db: DbService) {
+  constructor(private afAuth: AngularFireAuth, private db: DbService, private analytics: FirebaseAnalytics) {
     this.user$ = afAuth.authState.pipe(
       switchMap(user => (user ? db.doc$(`users/${user.uid}`) : of(null)))
     );
@@ -19,6 +20,7 @@ export class AuthService {
   async anonymousLogin() {
     const credential = await this.afAuth.signInAnonymously();
     await Storage.set({ key: 'uid', value: credential.user.uid });
+    this.analytics.setUserId(credential.user.uid);
     return await this.updateUserData(credential.user);
   }
 

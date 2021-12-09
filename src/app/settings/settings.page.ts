@@ -11,6 +11,7 @@ import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
 import { InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
 import dayjs, { Dayjs } from 'dayjs';
 import objectSupport from 'dayjs/plugin/objectSupport';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 @Component({
   selector: 'app-settings',
@@ -24,6 +25,7 @@ export class SettingsPage implements OnInit {
   isLoading = true;
   format = 'H:mm';
   isFirst = false;
+  token: string;
   constructor(
     fb: FormBuilder,
     private alert: AlertController,
@@ -35,9 +37,12 @@ export class SettingsPage implements OnInit {
     private store: InAppPurchase2,
     private toast: ToastController) {
     dayjs.extend(objectSupport);
+    dayjs.extend(customParseFormat);
     this.settings = {
       today: 'none',
+      todayCustom: dayjs().format(this.format),
       nextDay: 'none',
+      nextDayCustom: dayjs().format(this.format),
       exceptionOnly: false,
       weekend: false,
       darkMode: false
@@ -49,14 +54,15 @@ export class SettingsPage implements OnInit {
     const loading = await this.loading.create();
     loading.present();
     this.uid = await this.auth.uid();
-    const { value } = await Storage.get({ key: 'darkMode' });
-    if (value === 'true') this.settings.darkMode = true;
-    this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe((settings: Setting) => {
+    const { value } = await Storage.get({ key: 'token' });
+    this.token = value;
+    this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe(async (settings: Setting) => {
       this.isFirst = isEmpty(settings.updateAt);
-      console.log(settings);
-      if (settings.todayCustom) settings.todayCustom = dayjs().set(this.getTime(settings.todayCustom)).format();
-      if (settings.nextDayCustom) settings.nextDayCustom = dayjs().set(this.getTime(settings.nextDayCustom)).format();
+      if (settings.todayCustom) settings.todayCustom = dayjs().set(this.getTime(settings.todayCustom)).format(this.format);
+      if (settings.nextDayCustom) settings.nextDayCustom = dayjs().set(this.getTime(settings.nextDayCustom)).format(this.format);
       this.settings = { ...this.settings, ...settings };
+      const { value } = await Storage.get({ key: 'darkMode' });
+      if (value === 'true') this.settings.darkMode = true;
       this.settingsForm.patchValue(this.settings, { emitEvent: false, onlySelf: true });
       setTimeout(() => {
         this.isLoading = false;
@@ -66,13 +72,13 @@ export class SettingsPage implements OnInit {
 
     this.settingsForm.controls.today.valueChanges.subscribe(today => {
       if (!today) return;
-      if (today === 'custom') this.openTimePicker('today');
+      if (today === 'custom') return this.openTimePicker('today');
       this.save({ today });
     });
 
     this.settingsForm.controls.nextDay.valueChanges.subscribe(nextDay => {
       if (!nextDay) return;
-      if (nextDay === 'custom') this.openTimePicker('nextDay');
+      if (nextDay === 'custom') return this.openTimePicker('nextDay');
       this.save({ nextDay });
     });
 
@@ -84,8 +90,8 @@ export class SettingsPage implements OnInit {
 
   save(data: Setting): void {
     let t: HTMLIonToastElement;
-    const createdAt = this.isFirst ? new Date() : null; //token: this.fcm.token
-    data = omitBy({ ...data, type: 'NYC', updateAt: new Date(), createdAt }, isNil);
+    const createdAt = this.isFirst ? new Date() : null;
+    data = omitBy({ ...data, token: this.token, type: 'NYC', updateAt: new Date(), createdAt }, isNil);
     if (!isEmpty(data.token)) {
       this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
         t = await this.toast.create({
@@ -113,14 +119,14 @@ export class SettingsPage implements OnInit {
   }
 
   getNotificationMessage(type: string, action: string): string {
-    const time = type === 'today' ? this.settingsForm.value.todayCustom : this.settingsForm.value.nextDayCustom;
+    const time = type === 'today' ? this.settings.todayCustom : this.settings.nextDayCustom;
     switch (action) {
       case 'none':
         return 'Get notified about alternate side parking';
       case 'immediately':
         return `Next notification around ${type === 'today' ? '7:30AM' : '4:00PM'}`;
       case 'custom':
-        return `Next notification at ${dayjs(time).format('h:mm A')}`;
+        return `Next notification at ${dayjs(time, 'H:mm').format('h:mm A')}`;
       default:
         break;
     }
@@ -129,7 +135,8 @@ export class SettingsPage implements OnInit {
   async onTodayChange(date: string) {
     const maxTime = dayjs().set({ hour: 7, minute: 29 });
     if (dayjs(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
-    this.save({ today: this.settingsForm.value.today, todayCustom: dayjs(date, 'h:mmA').format(this.format) });
+    this.settings.todayCustom = dayjs(date, 'h:mmA').format(this.format);
+    this.save({ today: this.settingsForm.value.today, todayCustom: this.settings.todayCustom });
   }
 
   onTodayCancel() {
@@ -139,7 +146,8 @@ export class SettingsPage implements OnInit {
   async onNextDateChange(date: string) {
     const maxTime = dayjs().set({ hour: 15, minute: 59 });
     if (dayjs(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
-    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: dayjs(date, 'h:mmA').format(this.format) });
+    this.settings.nextDayCustom = dayjs(date, 'h:mmA').format(this.format);
+    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: this.settings.nextDayCustom });
   }
 
   onNextDateCancel() {
@@ -224,6 +232,13 @@ export class SettingsPage implements OnInit {
   }
 
   async openTimePicker(action: string = 'today') {
+    const data = action === 'today' ? this.settings.todayCustom : this.settings.nextDayCustom;
+    const time = dayjs(data, this.format);
+    const hour = time.get('hour');
+    const minute = time.get('minute');
+    const period = hour >= 12 ? 'PM' : 'AM';
+    let m = ((Math.round(minute/15) * 15) % 60).toString();
+    if (m === '0') m = '00';
     const picker = await this.picker.create({
       buttons: [{
         text: 'Cancel',
@@ -240,35 +255,18 @@ export class SettingsPage implements OnInit {
       columns: [
         {
           name: 'hours',
+          selectedIndex: range(1, 13).findIndex(o => o == hour),
           options: range(1, 13).map(o => ({ text: o.toString() }))
         },
         {
           name: 'minutes',
-          options: [
-            {
-              text: '00',
-            },
-            {
-              text: '15'
-            },
-            {
-              text: '30'
-            },
-            {
-              text: '45'
-            }
-          ]
+          selectedIndex: ['00', '15', '30', '45'].findIndex(o => o == m),
+          options: ['00', '15', '30', '45'].map(text => ({ text }))
         },
         {
           name: 'periods',
-          options: [
-            {
-              text: 'AM'
-            },
-            {
-              text: 'PM'
-            }
-          ]
+          selectedIndex: ['AM', 'PM'].findIndex(o => o == period.toString()),
+          options: ['AM', 'PM'].map(text => ({ text }))
         },
       ]
     });

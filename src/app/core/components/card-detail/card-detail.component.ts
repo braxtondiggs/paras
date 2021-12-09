@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, SimpleChange, SimpleChanges } from '@angul
 import { Feed } from '../../interface';
 import dayjs, { Dayjs } from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 
 @Component({
   selector: 'app-card-detail',
@@ -14,6 +15,7 @@ export class CardDetailComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     dayjs.extend(relativeTime);
+    dayjs.extend(advancedFormat);
     const currentItem: SimpleChange = changes.item;
     if (currentItem.currentValue) {
       const data: Feed | Dayjs = changes.item.currentValue;

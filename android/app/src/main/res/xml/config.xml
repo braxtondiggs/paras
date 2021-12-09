@@ -10,6 +10,11 @@
     <param name="android-package" value="org.apache.cordova.device.Device"/>
   </feature>
 
+  <feature name="FirebaseAnalytics">
+    <param name="android-package" value="by.chemerisuk.cordova.firebase.FirebaseAnalyticsPlugin"/>
+    <param name="onload" value="$ANALYTICS_COLLECTION_ENABLED"/>
+  </feature>
+
   <feature name="InAppBillingPlugin">
     <param name="android-package" value="cc.fovea.PurchasePlugin"/>
   </feature>

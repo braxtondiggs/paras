@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { SwiperModule } from 'swiper/angular';
 import { HorizontalCalendarComponent } from '../core/components/horizontal-calendar/horizontal-calendar.component';
 import { CalendarModule } from 'ion2-calendar';
 import { HomePage } from './home.page';
@@ -24,9 +25,9 @@ import { CardDetailComponent } from '../core/components/card-detail/card-detail.
         path: 'calendar',
         component: HomePage
       }
-    ])
+    ]),
+    SwiperModule
   ],
-  declarations: [HomePage, HorizontalCalendarComponent, ModalDetailComponent, CardDetailComponent],
-  entryComponents: [ModalDetailComponent]
+  declarations: [HomePage, HorizontalCalendarComponent, ModalDetailComponent, CardDetailComponent]
 })
 export class HomePageModule { }

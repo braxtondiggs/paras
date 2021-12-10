@@ -24,6 +24,7 @@
 @import '~@ionic/angular/css/text-alignment.css';
 @import '~@ionic/angular/css/text-transformation.css';
 @import '~@ionic/angular/css/flex-utils.css';
+@import 'swiper/scss';
 
 ion-toolbar {
   --background-color: transparent;
@@ -69,4 +70,38 @@ ion-calendar .days {
       color: #fff !important;
     }
   }
+}
+
+body.dark {
+  .horizontal-container {
+    .month {
+      color: var(--ion-color-step-900) !important;
+    }
+
+    .swiper-slide {
+      background-color: var(--ion-item-background) !important;
+
+      .day-num {
+        color: var(--ion-color-step-900) !important;
+      }
+    }
+  }
+
+  ion-calendar {
+    background: initial !important;
+
+    button.days-btn p,
+    .month-packer-item button {
+      color: var(--ion-color-step-900) !important;
+    }
+  }
+}
+
+ion-picker ion-picker-column.picker-col {
+  flex: 0 0 50px;
+}
+
+.ripple-parent {
+  position: relative;
+  overflow: hidden;
 }

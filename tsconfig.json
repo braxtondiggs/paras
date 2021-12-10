@@ -1,30 +1,25 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "allowJs": true,
-    "importHelpers": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
     "declaration": false,
     "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
     "experimentalDecorators": true,
+    "importHelpers": true,
     "lib": ["es2018", "dom"],
+    "module": "es2020",
     "moduleResolution": "node",
-    "noStrictGenericChecks": true,
-    "downlevelIteration": true,
     "outDir": "./dist/out-tsc",
-    "paths": {
-      "app/*": ["app/*"],
-      "environments/*": ["environments/*"],
-      "lib/*": ["lib/*"],
-      "core-js/es7/reflect": ["node_modules/core-js/proposals/reflect-metadata"],
-      "core-js/es6/*": ["node_modules/core-js/es"],
-      "core-js/es7/*": ["node_modules/core-js/es"]
-    },
-    "removeComments": true,
     "sourceMap": true,
     "target": "es5",
     "typeRoots": ["node_modules/@types"],
     "types": ["jest", "node"]
   },
-  "exclude": ["./node_modules/**.*"]
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true,
+    "enableIvy": true
+  }
 }

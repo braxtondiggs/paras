@@ -4,6 +4,10 @@ import * as functions from 'firebase-functions';
 import { findIndex, isNull, intersection, range, replace, upperFirst } from 'lodash';
 import * as Twitter from 'twitter';
 import { FCM } from './fcm';
+import axios from 'axios';
+import * as timezone from 'dayjs/plugin/timezone';
+dayjs.extend(timezone);
+dayjs.tz.setDefault('America/New_York');
 
 const client = new Twitter({
   consumer_key: 'ooP4LLRRJ51r454e3j7bVHc04',
@@ -12,9 +16,10 @@ const client = new Twitter({
   access_token_secret: 'E8n1eJgnKrTHQrZ6NToaYiewHRWE0c1DT7HxYixa2jnYh'
 });
 
-export async function getNYFeed(_request: functions.https.Request, response: functions.Response) {
+export async function getNYFeed(_request: functions.Request, response: functions.Response): Promise<any> {
   const tweets = await client.get('statuses/user_timeline', { screen_name: 'NYCASP', count: 1 });
   const promise: any[] = [];
+  const ID = (dayjs().get('hour') < 12) ? 'e6cbd04c-ae72-4670-820a-9a5a89148f53' : 'c8851266-e255-4e0a-bafa-1fd85863b0c2';
   let data;
   tweets.forEach(async (tweet: Twitter.ResponseData) => {
     const active = isActive(tweet.text);
@@ -36,6 +41,7 @@ export async function getNYFeed(_request: functions.https.Request, response: fun
   });
   await Promise.all(promise);
   await FCM('scrape', data);
+  await axios.get(`https://hc-ping.com/${ID}`);
   return response.status(200).send('Ok');
 }
 
@@ -46,7 +52,7 @@ function getDate(text: string): Date | null {
   const day = intersection(days, text.match(/(\d+)/g) as Array<String>);
   const year = dayjs().year();
   const time = `${dayjs().hour()}:${dayjs().minute()}:${dayjs().second()}`;
-  return day.length > 0 && month !== -1 ? dayjs(`${month + 1}-${day[0]}-${year} ${time}`).toDate() : null;
+  return day.length > 0 && month !== -1 ? dayjs(`${month + 1}-${day[0]}-${year} ${time}`, 'MM-DD-YYYY HH:mm:ss').toDate() : null;
 }
 
 function isActive(text: string): boolean | null {

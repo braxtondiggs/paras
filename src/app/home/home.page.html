@@ -2,22 +2,22 @@
   <ion-toolbar>
     <ion-title>ASP NYC</ion-title>
     <ion-buttons slot="primary">
-      <ion-button (click)="switchCalenderView()" color="dark">
-        <ion-icon slot="icon-only" name="calendar"></ion-icon>
+      <ion-button (click)="switchCalenderView()">
+        <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
       </ion-button>
-      <ion-button [routerLink]="['/settings']" color="dark">
-        <ion-icon slot="icon-only" name="settings"></ion-icon>
+      <ion-button [routerLink]="['/settings']">
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
-  <ion-slides #slider [options]="slideOpts">
-    <ion-slide>
+  <swiper #swiper [config]="swiperOpts">
+    <ng-template swiperSlide>
       <horizontal-calendar></horizontal-calendar>
-    </ion-slide>
-    <ion-slide>
+    </ng-template>
+    <ng-template swiperSlide>
       <ion-calendar #calendar [(ngModel)]="date" (change)="onSelect($event)" (monthChange)="onMonthChange($event)" type="string" [format]="'YYYY-MM-DD'" [options]="calendarOpts"></ion-calendar>
-    </ion-slide>
-  </ion-slides>
+    </ng-template>
+  </swiper>
 </ion-content>

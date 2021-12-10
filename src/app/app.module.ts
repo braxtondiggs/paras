@@ -3,27 +3,23 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-import { FirebaseX } from '@ionic-native/firebase-x/ngx';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { FirebaseAnalytics } from '@awesome-cordova-plugins/firebase-analytics/ngx';
 
-import { AngularFireModule } from '@angular/fire';
-import { AngularFireMessagingModule } from '@angular/fire/messaging';
-import { AngularFirestoreModule } from '@angular/fire/firestore';
-import { AngularFireAuthModule } from '@angular/fire/auth';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { environment } from '../environments/environment';
-import { AuthService, DbService, FcmService } from './core/services';
+import { AuthService, DbService } from './core/services';
 
 @NgModule({
   declarations: [AppComponent],
-  entryComponents: [],
   imports: [
     AngularFireAuthModule,
-    AngularFireMessagingModule,
-    AngularFirestoreModule,
     AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule,
     AppRoutingModule,
     BrowserModule,
     IonicModule.forRoot()
@@ -31,9 +27,7 @@ import { AuthService, DbService, FcmService } from './core/services';
   providers: [
     AuthService,
     DbService,
-    FcmService,
-    FirebaseX,
-    StatusBar,
+    FirebaseAnalytics,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

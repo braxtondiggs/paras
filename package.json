@@ -6,10 +6,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ionic capacitor build",
     "test": "ng test",
-    "lint": "ng lint",
     "e2e": "ng e2e",
+    "stats": "ng build --stats-json && webpack-bundle-analyzer ./dist/stats.json",
     "sync": "ionic capacitor sync",
     "ios": "ionic capacitor run ios",
     "android": "ionic capacitor run android",
@@ -20,7 +20,7 @@
   "dependencies": {
     "@angular/common": "^12.2.13",
     "@angular/core": "^12.2.13",
-    "@angular/fire": "^7.2.0",
+    "@angular/fire": "^7.0.4",
     "@angular/forms": "^12.2.13",
     "@angular/platform-browser": "^12.2.13",
     "@angular/platform-browser-dynamic": "^12.2.13",
@@ -45,7 +45,7 @@
     "cordova-support-android-plugin": "^1.0.2",
     "core-js": "^2.5.4",
     "dayjs": "^1.10.7",
-    "firebase": "^9.4.0",
+    "firebase": "^9.0.0",
     "ion2-calendar": "git+https://github.com/shaneparsons/ion2-calendar.git#76ae1e241183500a377647b363c931a03aa50bca",
     "lodash-es": "^4.17.15",
     "rxfire": "^6.0.0",
@@ -55,14 +55,9 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/architect": "^0.1202.13",
     "@angular-devkit/build-angular": "^12.2.13",
-    "@angular-devkit/core": "^12.2.13",
-    "@angular-devkit/schematics": "^12.2.13",
     "@angular/cli": "^12.2.13",
-    "@angular/compiler": "^12.2.13",
     "@angular/compiler-cli": "^12.2.13",
-    "@angular/language-service": "^12.2.13",
     "@capacitor/cli": "^3.3.2",
     "@ionic/angular-toolkit": "^5.0.3",
     "@types/jasmine": "~3.3.8",
@@ -80,8 +75,8 @@
     "karma-jasmine-html-reporter": "^1.7.0",
     "protractor": "~7.0.0",
     "ts-node": "~7.0.0",
-    "tslint": "~6.1.0",
-    "typescript": "~4.3.5"
+    "typescript": "~4.3.5",
+    "webpack-bundle-analyzer": "^4.5.0"
   },
   "description": "Get updates on alternate street parking rules & schedules with NYC parking app."
 }

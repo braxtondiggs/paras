@@ -82,7 +82,8 @@ export class AppComponent {
   }
 
   private async migrateData() {
+    const darkMode = localStorage.getItem('darkMode');
     if (localStorage.getItem('intro')) { await Storage.set({ key: 'intro', value: 'true' }); localStorage.removeItem('intro'); }
-    if (localStorage.getItem('darkMode')) { await Storage.set({ key: 'darkMode', value: localStorage.getItem('darkMode') }); localStorage.removeItem('darkMode'); }
+    if (darkMode) { await Storage.set({ key: 'darkMode', value: darkMode }); localStorage.removeItem('darkMode'); }
   }
 }

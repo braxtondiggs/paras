@@ -4,7 +4,7 @@
     <div class="swiper-container" *ngIf="items.length">
       <swiper #swiper [config]="swiperOpts" (slideChange)="onSlideChange()">
         <ng-template swiperSlide *ngFor="let item of items; let i = index">
-          <div [ngClass]="{'notice': hasNotice(item, feed)}" (click)="swiper.swiperRef.slideTo(i)" class="ion-activatable ripple-parent">
+          <div *ngIf="feed" [ngClass]="{'notice': hasNotice(item, feed)}" (click)="swiper.swiperRef.slideTo(i)" class="ion-activatable ripple-parent">
             <h6 class="day-short">{{item.day.short}}</h6>
             <h5 class="day-num">{{item.day.num}}</h5>
             <ion-ripple-effect></ion-ripple-effect>

@@ -8,7 +8,7 @@ import { Feed } from '../../interface';
   styleUrls: ['./modal-detail.component.scss'],
 })
 export class ModalDetailComponent {
-  @Input() item: Feed;
+  @Input() item?: Feed;
   constructor(private modal: ModalController) { }
 
   async dismiss() {

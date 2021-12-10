@@ -19,16 +19,21 @@ export class AuthService {
 
   async anonymousLogin() {
     const credential = await this.afAuth.signInAnonymously();
-    await Storage.set({ key: 'uid', value: credential.user.uid });
-    this.analytics.setUserId(credential.user.uid);
-    return await this.updateUserData(credential.user);
+    if (credential.user) {
+      await Storage.set({ key: 'uid', value: credential.user.uid });
+      this.analytics.setUserId(credential.user.uid);
+      return await this.updateUserData(credential.user);
+    } else {
+      await Storage.set({ key: 'uid', value: 'null' });
+      // TODO: Hide Setting If No UID
+    }
   }
 
   uid(): Promise<any> {
     return this.user$.pipe(take(1), map(u => u && u.uid)).toPromise();
   }
 
-  private updateUserData({ uid, }) {
+  private updateUserData({ uid }: { uid: string }) {
     const path = `users/${uid}`;
     const data = { uid, created: new Date() };
     return this.db.updateAt(path, data);

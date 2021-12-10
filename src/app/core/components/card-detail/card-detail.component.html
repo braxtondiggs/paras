@@ -1,5 +1,5 @@
 <div class="card-container">
-  <ion-card>
+  <ion-card *ngIf="detail">
     <ion-card-header [color]="detail.active ? 'primary' : 'danger'">
       <span class="date">{{detail.date}}</span>
       <span class="status">

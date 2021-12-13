@@ -35,7 +35,7 @@ export class AppComponent {
     PushNotifications.addListener('registrationError', async (error: any) => {
       const alert = await this.alert.create({
         header: 'ASP For NYC',
-        message: 'Notification token registration failed, you may not be able to recive push notifications or alerts!',
+        message: 'Notification token registration failed, you may not be able to receive push notifications or alerts!',
         buttons: [
           {
             text: 'Dismiss',

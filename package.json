@@ -20,7 +20,7 @@
   "dependencies": {
     "@angular/common": "^12.2.13",
     "@angular/core": "^12.2.13",
-    "@angular/fire": "^7.0.4",
+    "@angular/fire": "^6.1.5",
     "@angular/forms": "^12.2.13",
     "@angular/platform-browser": "^12.2.13",
     "@angular/platform-browser-dynamic": "^12.2.13",
@@ -45,11 +45,11 @@
     "cordova-support-android-plugin": "^1.0.2",
     "core-js": "^2.5.4",
     "dayjs": "^1.10.7",
-    "firebase": "^9.0.0",
+    "firebase": "8.0.0",
     "ion2-calendar": "git+https://github.com/shaneparsons/ion2-calendar.git#76ae1e241183500a377647b363c931a03aa50bca",
     "lodash-es": "^4.17.15",
-    "rxfire": "^6.0.0",
-    "rxjs": "^7.3.0",
+    "rxfire": "^4.0.0",
+    "rxjs": "^6.5.3",
     "swiper": "^7.3.1",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.4"

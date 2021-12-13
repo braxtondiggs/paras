@@ -50,11 +50,8 @@ export class AppComponent {
 
       await alert.present();
     });
-
-    PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-      alert('Push received: ' + JSON.stringify(notification));
-    });
   }
+  
   private async setTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const { value } = await Storage.get({ key: 'darkMode' });

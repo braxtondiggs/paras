@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { Platform, AlertController } from '@ionic/angular';
 import { PushNotificationSchema, PushNotifications, Token } from '@capacitor/push-notifications';
-import { FirebaseAnalytics } from '@awesome-cordova-plugins/firebase-analytics/ngx';
 import { Network } from '@capacitor/network';
 import { Storage } from '@capacitor/storage';
 
@@ -11,7 +10,7 @@ import { Storage } from '@capacitor/storage';
   styleUrls: ['app.component.scss']
 })
 export class AppComponent {
-  constructor(private alert: AlertController, private analytics: FirebaseAnalytics, private platform: Platform) {
+  constructor(private alert: AlertController, private platform: Platform) {
     this.migrateData();
     this.initializeApp();
     this.setTheme();
@@ -22,7 +21,6 @@ export class AppComponent {
     if (!this.platform.is('cordova')) return;
     if (!await Network.getStatus()) await this.showNetworkAlert();
     this.getFCMNotification();
-    this.analytics.setEnabled(true);
   }
 
   private getFCMNotification() {

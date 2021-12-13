@@ -1,224 +1,215 @@
 import db from './db';
+import * as functions from 'firebase-functions';
 import * as dayjs from 'dayjs';
 import * as cheerio from 'cheerio';
 import { toNumber, replace, split } from 'lodash';
 import * as timezone from 'dayjs/plugin/timezone';
+import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
 dayjs.tz.setDefault('America/New_York');
 
-export async function getNYCalender(): Promise<any> {
-  // const uri = 'https://www1.nyc.gov/html/dot/html/motorist/alternate-side-parking.shtml';
-  const year = 2021;
-  const $ = cheerio.load(getHTML());
-  const promise: Promise<FirebaseFirestore.WriteResult>[] = [];
-  $('table tbody tr').each((_: any, tr: any) => {
-    const data: string[] = [];
-    $('td', tr).each((__: any, td: any) => { data.push($(td).text()) });
-    if (data[0].includes('-')) {
-      const date = split(data[0], ', ')[1];
-      const range = split(date, '-');
-      const start = dayjs(range[0]).year(year).toDate()
-      const end = range[1].length <= 2 ? dayjs(start).set('date', toNumber(range[1])).year(year).toDate() : dayjs(range[1]).year(year).toDate();
-      const rangeArr = getDaysArray(start, end);
-      rangeArr.forEach((value) => {
-        const id = dayjs(value).format('MMDDYYYY');
-        promise.push(db.doc(`feed/${id}`).set(convertData(id, dayjs(value), data[1])));
-      });
-    } else {
-      const id = dayjs(data[0]).year(year).format('MMDDYYYY');
-      promise.push(db.doc(`feed/${id}`).set(convertData(id, dayjs(data[0]).year(year), data[1])));
-    }
-  });
-  return Promise.all(promise);
+export async function getNYCalender(_request: functions.Request, response: functions.Response) {
+   // const uri = 'https://www1.nyc.gov/html/dot/html/motorist/alternate-side-parking.shtml';
+   const year = 2022;
+   const $ = cheerio.load(getHTML());
+   const promise: Promise<FirebaseFirestore.WriteResult>[] = [];
+   $('table tbody tr').each((_: any, tr: any) => {
+      const data: string[] = [];
+      $('td', tr).each((__: any, td: any) => { data.push($(td).text()) });
+      if (!data.length) return;
+      if (data[0].includes('-')) {
+         const date = split(data[0], ', ')[0];
+         const range = split(date, '-');
+         const start = dayjs(range[0], 'MMM D').year(year).toDate()
+         const end = range[1].length <= 2 ? dayjs(start).set('date', toNumber(range[1])).year(year).toDate() : dayjs(range[1]).year(year).toDate();
+         const rangeArr = getDaysArray(start, end);
+         rangeArr.forEach((value) => {
+            const id = dayjs(value).format('MMDDYYYY');
+            promise.push(db.doc(`feed/${id}`).set(convertData(id, dayjs(value), data[1])));
+         });
+      } else {
+         const id = dayjs(data[0], 'MMM D').year(year).format('MMDDYYYY');
+         promise.push(db.doc(`feed/${id}`).set(convertData(id, dayjs(data[0], 'MMM D').year(year), data[1])));
+      }
+   });
+   const res = await Promise.all(promise);
+   response.send(res);
 }
 
 function getDaysArray(start: Date, end: Date) {
-  let arr,
-    dt: Date;
-  // tslint:disable-next-line: ban-comma-operator
-  for (arr = [], dt = start; dt <= end; dt.setDate(dt.getDate() + 1)) {
-    arr.push(new Date(dt));
-  }
-  return arr;
+   let arr,
+      dt: Date;
+   // tslint:disable-next-line: ban-comma-operator
+   for (arr = [], dt = start; dt <= end; dt.setDate(dt.getDate() + 1)) {
+      arr.push(new Date(dt));
+   }
+   return arr;
 };
 
 function convertData(id: string, date: dayjs.Dayjs, text: string) {
-  return {
-    active: false,
-    created: dayjs().toDate(),
-    date: date.hour(12).minute(0).second(0).toDate(),
-    id,
-    metered: true,
-    text: `Rules are suspended today, ${date.format('MMMM D')}.`,
-    reason: replace(text, '*', ''),
-    type: 'NYC'
-  };
+   return {
+      active: false,
+      created: dayjs().toDate(),
+      date: date.hour(12).minute(0).second(0).toDate(),
+      id,
+      metered: true,
+      text: `Rules are suspended today, ${date.format('MMMM D')}.`,
+      reason: replace(text, '*', ''),
+      type: 'NYC'
+   };
 }
 
 function getHTML() {
-  return `<table class="tabular-list table-striped" cellspacing="0" cellpadding="0" border="0" summary="Table of 2021 Alternate Side Parking Suspensions">
-  <colgroup>
-     <col width="43%">
-     <col width="57%">
-  </colgroup>
-  <thead>
-     <tr>
-        <td width="324" id="t1"><strong>Date</strong></td>
-        <td width="194" id="t2"><strong>Holiday</strong></td>
-     </tr>
-  </thead>
+   return `<table class="tg">
   <tbody>
      <tr>
-        <td>Friday, January 1</td>
+        <th class="header">Date</th>
+        <th class="header">Holiday</th>
+     </tr>
+     <tr>
+        <td>Jan 1, Sat</td>
         <td>New Year's Day</td>
      </tr>
      <tr>
-        <td>Wednesday, January 6</td>
+        <td>Jan 6, Thurs</td>
         <td>Three Kings' Day</td>
      </tr>
      <tr>
-        <td>Monday January 18</td>
-        <td>Martin Luther King, Jr.'s Birthday</td>
+        <td>Jan 17, Mon</td>
+        <td>Martin Luther King, Jr. Day</td>
      </tr>
      <tr>
-        <td>Thursday, February 11</td>
-        <td>Lunar New Year's Eve</td>
+        <td>Jan 31 - Feb 1, Mon-Tue</td>
+        <td>Lunar New Year's Eve &amp; Lunar New Year</td>
      </tr>
      <tr>
-        <td>Friday, February 12</td>
-        <td>Lunar New Year</td>
-     </tr>
-     <tr>
-        <td>Friday, February 12</td>
+        <td>Feb 12, Sat</td>
         <td>Lincoln's Birthday</td>
      </tr>
      <tr>
-        <td>Monday, February 15</td>
-        <td>Washington's Birthday (President's Day)</td>
+        <td>Feb 21, Mon</td>
+        <td>Washington's Birthday (Pres. Day)</td>
      </tr>
      <tr>
-        <td>Wednesday, February 17</td>
+        <td>Mar 2, Wed</td>
         <td>Ash Wednesday</td>
      </tr>
      <tr>
-        <td>Friday, February 26</td>
+        <td>Mar 17, Thurs</td>
         <td>Purim</td>
      </tr>
      <tr>
-        <td>Sunday-Monday, March 28-29</td>
-        <td>Passover (1st/2nd Days)</td>
-     </tr>
-     <tr>
-        <td>Thursday, April 1</td>
+        <td>Apr 14, Thurs</td>
         <td>Holy Thursday</td>
      </tr>
      <tr>
-        <td>Friday, April 2</td>
+        <td>Apr 15, Fri</td>
         <td>Good Friday</td>
      </tr>
      <tr>
-        <td>Saturday-Sunday, April 3-4</td>
-        <td>Passover (7th/8th Days)</td>
+        <td>Apr 16, Sat</td>
+        <td>Passover</td>
      </tr>
      <tr>
-        <td>Thursday, April 29</td>
+        <td>Apr 21, Thurs</td>
         <td>Holy Thursday (Orthodox)</td>
      </tr>
      <tr>
-        <td>Friday, April 30</td>
-        <td>Good Friday (Orthodox)</td>
+        <td>Apr 22, Friday</td>
+        <td>Passover (7th Day) and Good Friday (Orthodox)</td>
      </tr>
      <tr>
-        <td>Thursday-Saturday, May 13-15</td>
-        <td>Idul-Fitr (Eid Al-Fitr)</td>
+        <td>Apr 23, Sat</td>
+        <td>Passover (8th Day)</td>
      </tr>
      <tr>
-        <td>Thursday, May 13</td>
+        <td>May 2-4, Mon-Wed</td>
+        <td>Idul-Fitr (Eid al-Fitr)</td>
+     </tr>
+     <tr>
+        <td>May 26, Thurs</td>
         <td>Solemnity of the Ascension</td>
      </tr>
      <tr>
-        <td>Monday-Tuesday, May 17-18</td>
-        <td>Shavuot (2 Days)</td>
+        <td>May 30, Mon</td>
+        <td>Memorial Day</td>
      </tr>
      <tr>
-        <td>Monday, May 31</td>
-        <td>Memorial Day*</td>
+        <td>Jun 6, Mon</td>
+        <td>Shavuot</td>
      </tr>
      <tr>
-        <td>Saturday, June 19</td>
+        <td>Jun 20, Mon</td>
         <td>Juneteenth</td>
      </tr>
      <tr>
-        <td>Sunday-Monday, July 4-5</td>
+        <td>Jul 4, Mon</td>
         <td>Independence Day</td>
      </tr>
      <tr>
-        <td>Monday-Wednesday, July 19-21</td>
-        <td>Idul-Adha (Eid Al-Adha)</td>
+        <td>Jul 9-Jul 11, Sat-Mon</td>
+        <td>Idul-Adha (Eid al-Adha)</td>
      </tr>
      <tr>
-        <td>Sunday, August 15</td>
+        <td>Aug 15, Mon</td>
         <td>Feast of the Assumption</td>
      </tr>
      <tr>
-        <td>Monday, September 6</td>
+        <td>Sep 5, Mon</td>
         <td>Labor Day</td>
      </tr>
      <tr>
-        <td>Tuesday-Wednesday, September 7-8</td>
+        <td>Sep 26-27, Mon-Tue</td>
         <td>Rosh Hashanah</td>
      </tr>
      <tr>
-        <td>Thursday, September 16</td>
+        <td>Oct 5, Wed</td>
         <td>Yom Kippur</td>
      </tr>
      <tr>
-        <td>Tuesday-Wednesday, September 21-22</td>
-        <td>Succoth (2 Days)</td>
+        <td>Oct 10, Mon</td>
+        <td>Italian Heritage Day/Indigenous Peoples' Day and Succoth (1st Day)</td>
      </tr>
      <tr>
-        <td>Tuesday, September 28</td>
+        <td>Oct 11, Tue</td>
+        <td>Succoth (2nd Day)</td>
+     </tr>
+     <tr>
+        <td>Oct 17, Mon</td>
         <td>Shemini Atzereth</td>
      </tr>
      <tr>
-        <td>Wednesday, September 29</td>
+        <td>Oct 18, Tue</td>
         <td>Simchas Torah</td>
      </tr>
      <tr>
-        <td>Monday, October 11</td>
-        <td>Columbus Day</td>
-     </tr>
-     <tr>
-        <td>Monday, November 1</td>
-        <td>All Saints' Day</td>
-     </tr>
-     <tr>
-        <td>Tuesday, November 2</td>
-        <td>Election Day</td>
-     </tr>
-     <tr>
-        <td>Thursday, November 4</td>
+        <td>Oct 24, Mon</td>
         <td>Diwali</td>
      </tr>
      <tr>
-        <td>Thursday, November 11</td>
-        <td>Veteran’s Day</td>
+        <td>Nov 1, Tue</td>
+        <td>All Saints Day</td>
      </tr>
      <tr>
-        <td>Thursday, November 25</td>
+        <td>Nov 8, Tue</td>
+        <td>Election Day</td>
+     </tr>
+     <tr>
+        <td>Nov 11, Fri</td>
+        <td>Veterans Day</td>
+     </tr>
+     <tr>
+        <td>Nov 24, Thurs</td>
         <td>Thanksgiving Day</td>
      </tr>
      <tr>
-        <td>Wednesday December 8 </td>
+        <td>Dec 8, Thurs</td>
         <td>Immaculate Conception</td>
      </tr>
      <tr>
-        <td>Friday-Saturday, December 24-25</td>
-        <td>Christmas Day</td>
-     </tr>
-     <tr>
-        <td>Friday-Saturday, December 31-January 1</td>
-        <td>New Year's Day (2022)</td>
+        <td>Dec 26, Mon</td>
+        <td>Christmas Day (Observed)</td>
      </tr>
   </tbody>
 </table>`

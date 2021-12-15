@@ -19,7 +19,7 @@ const client = new Twitter({
 export async function getNYFeed(_request: functions.Request, response: functions.Response): Promise<any> {
   const tweets = await client.get('statuses/user_timeline', { screen_name: 'NYCASP', count: 1 });
   const promise: any[] = [];
-  const ID = (dayjs().get('hour') < 12) ? 'e6cbd04c-ae72-4670-820a-9a5a89148f53' : 'c8851266-e255-4e0a-bafa-1fd85863b0c2';
+  const ID = dayjs().get('hour') <= 12 ? 'e6cbd04c-ae72-4670-820a-9a5a89148f53' : 'c8851266-e255-4e0a-bafa-1fd85863b0c2';
   let data;
   tweets.forEach(async (tweet: Twitter.ResponseData) => {
     const active = isActive(tweet.text);

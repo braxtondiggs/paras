@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { Platform, AlertController } from '@ionic/angular';
 import { PushNotificationSchema, PushNotifications, Token } from '@capacitor/push-notifications';
-import { FirebaseAnalytics } from '@awesome-cordova-plugins/firebase-analytics/ngx';
 import { Network } from '@capacitor/network';
 import { Storage } from '@capacitor/storage';
 
@@ -11,7 +10,7 @@ import { Storage } from '@capacitor/storage';
   styleUrls: ['app.component.scss']
 })
 export class AppComponent {
-  constructor(private alert: AlertController, private analytics: FirebaseAnalytics, private platform: Platform) {
+  constructor(private alert: AlertController, private platform: Platform) {
     this.migrateData();
     this.initializeApp();
     this.setTheme();
@@ -22,7 +21,6 @@ export class AppComponent {
     if (!this.platform.is('cordova')) return;
     if (!await Network.getStatus()) await this.showNetworkAlert();
     this.getFCMNotification();
-    this.analytics.setEnabled(true);
   }
 
   private getFCMNotification() {
@@ -37,7 +35,7 @@ export class AppComponent {
     PushNotifications.addListener('registrationError', async (error: any) => {
       const alert = await this.alert.create({
         header: 'ASP For NYC',
-        message: 'Notification token registration failed, you may not be able to recive push notifications or alerts!',
+        message: 'Notification token registration failed, you may not be able to receive push notifications or alerts!',
         buttons: [
           {
             text: 'Dismiss',
@@ -52,11 +50,8 @@ export class AppComponent {
 
       await alert.present();
     });
-
-    PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-      alert('Push received: ' + JSON.stringify(notification));
-    });
   }
+  
   private async setTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const { value } = await Storage.get({ key: 'darkMode' });
@@ -82,7 +77,8 @@ export class AppComponent {
   }
 
   private async migrateData() {
+    const darkMode = localStorage.getItem('darkMode');
     if (localStorage.getItem('intro')) { await Storage.set({ key: 'intro', value: 'true' }); localStorage.removeItem('intro'); }
-    if (localStorage.getItem('darkMode')) { await Storage.set({ key: 'darkMode', value: localStorage.getItem('darkMode') }); localStorage.removeItem('darkMode'); }
+    if (darkMode) { await Storage.set({ key: 'darkMode', value: darkMode }); localStorage.removeItem('darkMode'); }
   }
 }

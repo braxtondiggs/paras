@@ -8,7 +8,7 @@ import { AlertController, PickerController, LoadingController, ToastController }
 import { Storage } from '@capacitor/storage';
 import { EmailComposer } from 'capacitor-email-composer';
 import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
-import { InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
+import { InAppPurchase2, IAPProduct } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
 import dayjs, { Dayjs } from 'dayjs';
 import objectSupport from 'dayjs/plugin/objectSupport';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -19,13 +19,13 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
   styleUrls: ['./settings.page.scss'],
 })
 export class SettingsPage implements OnInit {
-  uid: string;
+  uid?: string;
   settings: Setting;
   settingsForm: FormGroup;
   isLoading = true;
   format = 'H:mm';
   isFirst = false;
-  token: string;
+  token?: string | null;
   constructor(
     fb: FormBuilder,
     private alert: AlertController,
@@ -70,22 +70,26 @@ export class SettingsPage implements OnInit {
       });
     });
 
-    this.settingsForm.controls.today.valueChanges.subscribe(today => {
+    this.settingsForm.controls['today'].valueChanges.subscribe(today => {
       if (!today) return;
       if (today === 'custom') return this.openTimePicker('today');
       this.save({ today });
     });
 
-    this.settingsForm.controls.nextDay.valueChanges.subscribe(nextDay => {
+    this.settingsForm.controls['nextDay'].valueChanges.subscribe(nextDay => {
       if (!nextDay) return;
       if (nextDay === 'custom') return this.openTimePicker('nextDay');
       this.save({ nextDay });
     });
 
-    this.settingsForm.controls.darkMode.valueChanges.subscribe(async (value) => {
+    this.settingsForm.controls['darkMode'].valueChanges.subscribe(async (value) => {
       await Storage.set({ key: 'darkMode', value: value.toString() });
       document.body.classList.toggle('dark', value);
     });
+  }
+
+  onCheckBoxChange(ev: Event, action: string) {
+    this.save({ [action]: (ev as any).detail.checked });
   }
 
   save(data: Setting): void {
@@ -128,7 +132,7 @@ export class SettingsPage implements OnInit {
       case 'custom':
         return `Next notification at ${dayjs(time, 'H:mm').format('h:mm A')}`;
       default:
-        break;
+        return '';
     }
   }
 
@@ -140,7 +144,7 @@ export class SettingsPage implements OnInit {
   }
 
   onTodayCancel() {
-    this.settingsForm.controls.today.patchValue(this.settings.today);
+    this.settingsForm.controls['today'].patchValue(this.settings.today);
   }
 
   async onNextDateChange(date: string) {
@@ -151,7 +155,7 @@ export class SettingsPage implements OnInit {
   }
 
   onNextDateCancel() {
-    this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay);
+    this.settingsForm.controls['nextDay'].patchValue(this.settings.nextDay);
   }
 
   rate() {
@@ -197,8 +201,8 @@ export class SettingsPage implements OnInit {
             });
 
             this.store.when('donation_99')
-              .approved(p => p.verify())
-              .verified(async (p) => {
+              .approved((p: IAPProduct) => p.verify())
+              .verified(async (p: IAPProduct) => {
                 p.finish();
                 const toast = await this.toast.create({ message: 'Your support is always appreciated!', duration: 10000 });
                 toast.present();
@@ -225,7 +229,7 @@ export class SettingsPage implements OnInit {
       message: `The time you have selected is too early, please select a time before ${time}.`,
       buttons: [{
         text: 'Okay',
-        handler: () => this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay)
+        handler: () => this.settingsForm.controls['nextDay'].patchValue(this.settings.nextDay)
       }]
     });
     await alert.present();
@@ -237,7 +241,7 @@ export class SettingsPage implements OnInit {
     const hour = time.get('hour');
     const minute = time.get('minute');
     const period = hour >= 12 ? 'PM' : 'AM';
-    let m = ((Math.round(minute/15) * 15) % 60).toString();
+    let m = ((Math.round(minute / 15) * 15) % 60).toString();
     if (m === '0') m = '00';
     const picker = await this.picker.create({
       buttons: [{

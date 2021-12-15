@@ -37,11 +37,11 @@
     <ion-list lines="none">
       <ion-item>
         <ion-label>Exception Notifications Only:</ion-label>
-        <ion-checkbox formControlName="exceptionOnly" (ionChange)="save({exceptionOnly: $event.detail.checked})"></ion-checkbox>
+        <ion-checkbox formControlName="exceptionOnly" (ionChange)="onCheckBoxChange($event, 'exceptionOnly')"></ion-checkbox>
       </ion-item>
       <ion-item>
         <ion-label>Weekend Notifications:</ion-label>
-        <ion-checkbox formControlName="weekend" (ionChange)="save({weekend: $event.detail.checked})"></ion-checkbox>
+        <ion-checkbox formControlName="weekend" (ionChange)="onCheckBoxChange($event, 'weekend')"></ion-checkbox>
       </ion-item>
     </ion-list>
     <br />

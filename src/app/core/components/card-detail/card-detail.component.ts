@@ -10,15 +10,15 @@ import advancedFormat from 'dayjs/plugin/advancedFormat';
   styleUrls: ['./card-detail.component.scss'],
 })
 export class CardDetailComponent implements OnChanges {
-  detail: Item;
-  @Input() item: Feed | Dayjs;
+  detail?: Item;
+  @Input() item?: Feed | Dayjs;
 
   ngOnChanges(changes: SimpleChanges) {
     dayjs.extend(relativeTime);
     dayjs.extend(advancedFormat);
-    const currentItem: SimpleChange = changes.item;
+    const currentItem: SimpleChange = changes['item'];
     if (currentItem.currentValue) {
-      const data: Feed | Dayjs = changes.item.currentValue;
+      const data: Feed | Dayjs = changes['item'].currentValue;
       if (!dayjs.isDayjs(data)) {
         this.detail = {
           ...data,

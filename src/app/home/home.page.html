@@ -17,7 +17,7 @@
       <horizontal-calendar></horizontal-calendar>
     </ng-template>
     <ng-template swiperSlide>
-      <ion-calendar #calendar [(ngModel)]="date" (change)="onSelect($event)" (monthChange)="onMonthChange($event)" type="string" [format]="'YYYY-MM-DD'" [options]="calendarOpts"></ion-calendar>
+      <ion-calendar #calendar [(ngModel)]="date" (change)="onChange($event)" (monthChange)="onMonthChange($event)" type="string" [format]="'YYYY-MM-DD'" [options]="calendarOpts"></ion-calendar>
     </ng-template>
   </swiper>
 </ion-content>

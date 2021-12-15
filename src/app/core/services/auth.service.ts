@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFireAuth } from '@angular/fire/auth';
 import { Observable, of } from 'rxjs';
 import { switchMap, take, map } from 'rxjs/operators';
-import { FirebaseAnalytics } from '@awesome-cordova-plugins/firebase-analytics/ngx';
 import { Storage } from '@capacitor/storage';
 import { DbService } from './db.service';
 
@@ -11,7 +10,7 @@ import { DbService } from './db.service';
 })
 export class AuthService {
   user$: Observable<any>;
-  constructor(private afAuth: AngularFireAuth, private db: DbService, private analytics: FirebaseAnalytics) {
+  constructor(private afAuth: AngularFireAuth, private db: DbService) {
     this.user$ = afAuth.authState.pipe(
       switchMap(user => (user ? db.doc$(`users/${user.uid}`) : of(null)))
     );
@@ -19,16 +18,20 @@ export class AuthService {
 
   async anonymousLogin() {
     const credential = await this.afAuth.signInAnonymously();
-    await Storage.set({ key: 'uid', value: credential.user.uid });
-    this.analytics.setUserId(credential.user.uid);
-    return await this.updateUserData(credential.user);
+    if (credential.user) {
+      await Storage.set({ key: 'uid', value: credential.user.uid });
+      return await this.updateUserData(credential.user);
+    } else {
+      await Storage.set({ key: 'uid', value: 'null' });
+      // TODO: Hide Setting If No UID
+    }
   }
 
   uid(): Promise<any> {
     return this.user$.pipe(take(1), map(u => u && u.uid)).toPromise();
   }
 
-  private updateUserData({ uid, }) {
+  private updateUserData({ uid }: { uid: string }) {
     const path = `users/${uid}`;
     const data = { uid, created: new Date() };
     return this.db.updateAt(path, data);

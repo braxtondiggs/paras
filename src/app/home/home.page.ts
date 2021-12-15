@@ -3,9 +3,9 @@ import { Location } from '@angular/common';
 import { ModalController } from '@ionic/angular';
 import { SwiperOptions } from 'swiper';
 import { SwiperComponent } from 'swiper/angular';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 import { DbService } from '../core/services';
-import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, CalendarComponent } from 'ion2-calendar';
+import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, CalendarComponent, CalendarComponentPayloadTypes } from 'ion2-calendar';
 import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
 import { Feed } from '../core/interface';
 import dayjs, { Dayjs } from 'dayjs';
@@ -16,25 +16,24 @@ import dayjs, { Dayjs } from 'dayjs';
   styleUrls: ['home.page.scss']
 })
 export class HomePage implements AfterViewInit {
-  index = true; // TODO: Save using storage config
+  index = true;
   date: string = dayjs().format();
-  items: Feed[];
+  items: Feed[] = [];
   swiperOpts: SwiperOptions = {
     allowTouchMove: false,
     initialSlide: this.location.path().includes('calendar') ? 1 : 0
   };
   calendarOpts: CalendarComponentOptions = {
     daysConfig: [],
-    from: new Date(2019, 11, 1),
-    to: dayjs().year(2021).endOf('year').toDate()
+    from: new Date(2019, 11, 1)
   };
-  @ViewChild('calendar') cal: CalendarComponent;
+  @ViewChild('calendar') cal?: CalendarComponent;
   @ViewChild('swiper', { static: false }) swiper?: SwiperComponent;
 
   constructor(private db: DbService, private modal: ModalController, private location: Location) { }
 
-  async onSelect(date: string) {
-    const item = this.items.find((o) => dayjs(o.date.toDate()).isSame(date, 'day')) || dayjs(date);
+  async onChange(date: CalendarComponentPayloadTypes) {
+    const item = this.items.find((o) => dayjs(o.date.toDate()).isSame(date.toString(), 'day')) || dayjs(date.toString());
     const modal = await this.modal.create({
       component: ModalDetailComponent,
       componentProps: {
@@ -45,6 +44,7 @@ export class HomePage implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    this.getLastDate();
     this.getData(dayjs().startOf('month'), dayjs().endOf('month'));
   }
 
@@ -54,7 +54,7 @@ export class HomePage implements AfterViewInit {
 
   switchCalenderView() {
     this.index = !this.index;
-    this.swiper.swiperRef.slideTo(this.index ? 0 : 1);
+    this.swiper?.swiperRef.slideTo(this.index ? 0 : 1);
     this.location.replaceState(`/home${this.index ? '' : '/calendar'}`);
   }
 
@@ -74,8 +74,15 @@ export class HomePage implements AfterViewInit {
           marked: true
         }));
         this.calendarOpts.daysConfig = daysConfig;
-        this.cal.options = this.calendarOpts;
+        if (this.cal) this.cal.options = this.calendarOpts;
       });
+  }
+
+  private getLastDate() {
+    this.db.collection$('feed', (ref) => ref.limit(1).orderBy('date', 'desc')).pipe(take(1)).subscribe((item) => {
+        if (!item.length) return;
+        this.calendarOpts.to = item[0].date.toDate();
+    });
   }
 
   private getCalendarClass(item: Feed): string | undefined {

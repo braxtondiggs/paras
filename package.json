@@ -10,6 +10,7 @@
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch --coverage --runInBand",
     "stats": "ng build --stats-json && webpack-bundle-analyzer ./www/stats.json",
+    "copy": "ionic capacitor copy",
     "sync": "ionic capacitor sync",
     "ios": "ionic capacitor run ios",
     "android": "ionic capacitor run android",

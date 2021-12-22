@@ -4,7 +4,7 @@ import { DbService, AuthService } from '../core/services';
 import { Setting } from '../core/interface';
 import { omitBy, isNil, isEmpty, range } from 'lodash-es';
 import { take } from 'rxjs/operators';
-import { AlertController, PickerController, LoadingController, ToastController } from '@ionic/angular';
+import { AlertController, PickerController, LoadingController, ToastController, Platform } from '@ionic/angular';
 import { Storage } from '@capacitor/storage';
 import { EmailComposer } from 'capacitor-email-composer';
 import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
@@ -26,6 +26,7 @@ export class SettingsPage implements OnInit {
   format = 'H:mm';
   isFirst = false;
   token?: string | null;
+  isiOS?: boolean;
   constructor(
     fb: FormBuilder,
     private alert: AlertController,
@@ -34,6 +35,7 @@ export class SettingsPage implements OnInit {
     private launchReview: LaunchReview,
     private loading: LoadingController,
     private picker: PickerController,
+    private platform: Platform,
     private store: InAppPurchase2,
     private toast: ToastController) {
     dayjs.extend(objectSupport);
@@ -48,6 +50,7 @@ export class SettingsPage implements OnInit {
       darkMode: false
     };
     this.settingsForm = fb.group(this.settings);
+    this.isiOS = this.platform.is('ios');
   }
 
   async ngOnInit() {
@@ -174,8 +177,13 @@ export class SettingsPage implements OnInit {
           role: 'cancel'
         }, {
           text: 'Contact Us',
-          handler: () => {
-            EmailComposer.open({ to: ['braxtondiggs@gmail.com'], subject: 'ASP for NYC', isHtml: false, body: '' });
+          handler: async () => {
+            const { hasAccount } = await EmailComposer.hasAccount();
+            if (hasAccount) {
+              EmailComposer.open({ to: ['braxtondiggs@gmail.com'], subject: 'ASP for NYC', isHtml: false, body: '' });
+            } else {
+              window.open('mailto:someone@example.com?subject=ASP%20for%20NYC', '_system');
+            }
           }
         }
       ]

@@ -80,8 +80,8 @@ export class HomePage implements AfterViewInit {
 
   private getLastDate() {
     this.db.collection$('feed', (ref) => ref.limit(1).orderBy('date', 'desc')).pipe(take(1)).subscribe((item) => {
-        if (!item.length) return;
-        this.calendarOpts.to = item[0].date.toDate();
+      if (!item.length) return;
+      this.calendarOpts.to = item[0].date.toDate();
     });
   }
 

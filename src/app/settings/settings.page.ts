@@ -161,9 +161,11 @@ export class SettingsPage implements OnInit {
     this.settingsForm.controls['nextDay'].patchValue(this.settings.nextDay);
   }
 
-  rate() {
+  async rate() {
     if (this.launchReview.isRatingSupported()) {
-      this.launchReview.launch();
+      await this.launchReview.launch();
+    } else {
+      this.launchReview.rating().subscribe();
     }
   }
 

@@ -36,6 +36,7 @@ export class HomePage implements AfterViewInit {
     const item = this.items.find((o) => dayjs(o.date.toDate()).isSame(date.toString(), 'day')) || dayjs(date.toString());
     const modal = await this.modal.create({
       component: ModalDetailComponent,
+      cssClass: 'fullscreen',
       componentProps: {
         item
       }

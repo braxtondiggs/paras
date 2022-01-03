@@ -6,7 +6,9 @@ import * as Twitter from 'twitter';
 import { FCM } from './fcm';
 import axios from 'axios';
 import * as timezone from 'dayjs/plugin/timezone';
+import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
 dayjs.tz.setDefault('America/New_York');
 
 const client = new Twitter({
@@ -49,10 +51,10 @@ function getDate(text: string): Date | null {
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const days = range(1, 32).map(v => v.toString());
   const month = findIndex(months, v => text.indexOf(v) !== -1);
-  const day = intersection(days, text.match(/(\d+)/g) as Array<String>);
+  const day = intersection(days, text.match(/(\d+)/g));
   const year = dayjs().year();
   const time = `${dayjs().hour()}:${dayjs().minute()}:${dayjs().second()}`;
-  return day.length > 0 && month !== -1 ? dayjs(`${month + 1}-${day[0]}-${year} ${time}`, 'MM-DD-YYYY HH:mm:ss').toDate() : null;
+  return day.length > 0 && month !== -1 ? dayjs(`${month + 1}-${day[0]}-${year} ${time}`, 'M-D-YYYY HH:mm:ss').toDate() : null;
 }
 
 function isActive(text: string): boolean | null {

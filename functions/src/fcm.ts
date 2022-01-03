@@ -3,7 +3,7 @@ import db from './db';
 import * as dayjs from 'dayjs';
 import * as weekday from 'dayjs/plugin/weekday';
 import { isEmpty } from 'lodash';
-dayjs.extend(weekday)
+dayjs.extend(weekday);
 
 const payload: admin.messaging.MessagingPayload = {
   notification: {

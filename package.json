@@ -17,15 +17,20 @@
     "build:ios": "ionic capacitor build ios",
     "build:android": "ionic capacitor build android"
   },
+  "engines": {
+    "node": "<14"
+  },
   "private": true,
   "dependencies": {
     "@angular/common": "^12.2.13",
+    "@angular/compiler": "^12.2.13",
     "@angular/core": "^12.2.13",
     "@angular/fire": "^6.1.5",
     "@angular/forms": "^12.2.13",
     "@angular/platform-browser": "^12.2.13",
     "@angular/platform-browser-dynamic": "^12.2.13",
     "@angular/router": "^12.2.13",
+    "@awesome-cordova-plugins/core": "^5.37.1",
     "@awesome-cordova-plugins/device": "^5.37.1",
     "@awesome-cordova-plugins/in-app-purchase-2": "^5.37.1",
     "@awesome-cordova-plugins/launch-review": "^5.37.1",
@@ -47,8 +52,9 @@
     "core-js": "^2.5.4",
     "dayjs": "^1.10.7",
     "firebase": "8.0.0",
-    "ion2-calendar": "git+https://github.com/shaneparsons/ion2-calendar.git#76ae1e241183500a377647b363c931a03aa50bca",
+    "ion2-calendar": "^3.5.0",
     "lodash-es": "^4.17.15",
+    "moment": "^2.29.1",
     "rxfire": "^4.0.0",
     "rxjs": "^6.5.3",
     "swiper": "^7.3.4",

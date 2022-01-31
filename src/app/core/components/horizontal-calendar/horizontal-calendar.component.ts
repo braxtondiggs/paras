@@ -63,7 +63,7 @@ export class HorizontalCalendarComponent implements OnInit {
   private getSelectedItem(calendar: Calendar, feed: Feed[]): Feed | undefined {
     const filteredFeed = filter(feed, (o => dayjs(o.date.toDate()).isSame(calendar.date, 'day')));
     if (isEmpty(filteredFeed)) return;
-    return first(orderBy(filteredFeed, (o => o.date.seconds), ['asc']));
+    return first(orderBy(filteredFeed, (o => o.date.seconds), ['desc']));
   }
 
   private async slideEnd() {

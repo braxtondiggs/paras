@@ -37,10 +37,8 @@ export async function getNYCalender(_request: functions.Request, response: funct
    response.send(res);
 }
 
-function getDaysArray(start: Date, end: Date) {
-   let arr,
-      dt: Date;
-   // tslint:disable-next-line: ban-comma-operator
+function getDaysArray(start: Date, end: Date): Date[] {
+   let arr: Date[], dt: Date;
    for (arr = [], dt = start; dt <= end; dt.setDate(dt.getDate() + 1)) {
       arr.push(new Date(dt));
    }

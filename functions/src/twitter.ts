@@ -1,7 +1,7 @@
 import * as dayjs from 'dayjs';
 import db from './db';
 import * as functions from 'firebase-functions';
-import { findIndex, isNull, intersection, range, replace, upperFirst } from 'lodash';
+import { isNull, isUndefined, replace, upperFirst } from 'lodash';
 import * as Twitter from 'twitter';
 import { FCM } from './fcm';
 import axios from 'axios';
@@ -11,6 +11,7 @@ dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 dayjs.tz.setDefault('America/New_York');
 
+const Sherlock = require('sherlockjs');
 const client = new Twitter({
   consumer_key: 'ooP4LLRRJ51r454e3j7bVHc04',
   consumer_secret: '6YBjrkeOSiEbCiqGe9H9POpxcMGdfyXfYlJvB1CUrjm8lv1Ayo',
@@ -25,20 +26,22 @@ export async function getNYFeed(_request: functions.Request, response: functions
   let data;
   tweets.forEach(async (tweet: Twitter.ResponseData) => {
     const active = isActive(tweet.text);
-    const date = getDate(tweet.text);
+    const dates = getDate(tweet.text);
     const metered = isMetered(tweet.text.toLowerCase());
-    if (!isNull(date) && !isNull(active)) {
-      data = {
-        active,
-        created: dayjs(tweet.created_at).toDate(),
-        date,
-        id: tweet.id,
-        metered,
-        reason: getReason(tweet.text),
-        text: formatText(tweet.text),
-        type: 'NYC'
-      };
-      promise.push(db.doc(`feed/${tweet.id}`).set(data));
+    if (!isUndefined(dates) && !isNull(active)) {
+      dates.forEach((date) => {
+        data = {
+          active,
+          created: dayjs(tweet.created_at).toDate(),
+          date,
+          id: tweet.id,
+          metered,
+          reason: getReason(tweet.text),
+          text: formatText(tweet.text),
+          type: 'NYC'
+        };
+        promise.push(db.doc(`feed/${tweet.id}`).set(data));
+      });
     }
   });
   await Promise.all(promise);
@@ -47,14 +50,12 @@ export async function getNYFeed(_request: functions.Request, response: functions
   return response.status(200).send('Ok');
 }
 
-function getDate(text: string): Date | null {
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const days = range(1, 32).map(v => v.toString());
-  const month = findIndex(months, v => text.indexOf(v) !== -1);
-  const day = intersection(days, text.match(/(\d+)/g));
-  const year = dayjs().year();
-  const time = `${dayjs().hour()}:${dayjs().minute()}:${dayjs().second()}`;
-  return day.length > 0 && month !== -1 ? dayjs(`${month + 1}-${day[0]}-${year} ${time}`, 'M-D-YYYY HH:mm:ss').toDate() : null;
+function getDate(text: string): Date[] | undefined {
+  const sherlocked = Sherlock.parse(text);
+
+  if (!sherlocked.validated) return;
+  if (isNull(sherlocked.endDate)) return [sherlocked.startDate];
+  return getDaysArray(sherlocked.startDate, sherlocked.endDate);
 }
 
 function isActive(text: string): boolean | null {
@@ -79,3 +80,11 @@ function getReason(text: string): string | null {
   const output = text.split('for ').pop()?.split('.');
   return output ? upperFirst(output[0]) : null;
 }
+
+function getDaysArray(start: Date, end: Date): Date[] {
+  let arr: Date[], dt: Date;
+  for (arr = [], dt = start; dt <= end; dt.setDate(dt.getDate() + 1)) {
+    arr.push(new Date(dt));
+  }
+  return arr;
+};

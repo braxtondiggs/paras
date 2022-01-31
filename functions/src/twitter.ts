@@ -29,18 +29,20 @@ export async function getNYFeed(_request: functions.Request, response: functions
     const dates = getDate(tweet.text);
     const metered = isMetered(tweet.text.toLowerCase());
     if (!isUndefined(dates) && !isNull(active)) {
-      dates.forEach((date) => {
+      dates.forEach((date, index) => {
+        const id = index === 0 ? tweet.id : `${tweet.id}-${index}`;
+
         data = {
           active,
           created: dayjs(tweet.created_at).toDate(),
-          date,
+          date: dayjs(date).add(5, 'h').toDate(), // UTC
           id: tweet.id,
           metered,
           reason: getReason(tweet.text),
           text: formatText(tweet.text),
           type: 'NYC'
         };
-        promise.push(db.doc(`feed/${tweet.id}`).set(data));
+        promise.push(db.doc(`feed/${id}`).set(data));
       });
     }
   });
@@ -52,8 +54,7 @@ export async function getNYFeed(_request: functions.Request, response: functions
 
 function getDate(text: string): Date[] | undefined {
   const sherlocked = Sherlock.parse(text);
-
-  if (!sherlocked.validated) return;
+  if (isNull(sherlocked.startDate) && isNull(sherlocked.endDate)) return;
   if (isNull(sherlocked.endDate)) return [sherlocked.startDate];
   return getDaysArray(sherlocked.startDate, sherlocked.endDate);
 }
@@ -71,9 +72,8 @@ function isMetered(text: string): boolean {
 }
 
 function formatText(text: string): string {
-  let output = replace(text, '#NYCASP ', '');
-  output = upperFirst(output);
-  return output;
+  const output = replace(text, '#NYCASP ', '');
+  return upperFirst(output);;
 }
 
 function getReason(text: string): string | null {

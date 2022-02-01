@@ -9,6 +9,7 @@ import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, Cale
 import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
 import { Feed } from '../core/interface';
 import dayjs, { Dayjs } from 'dayjs';
+import { first, orderBy } from 'lodash-es';
 
 @Component({
   selector: 'app-home',
@@ -33,7 +34,8 @@ export class HomePage implements AfterViewInit {
   constructor(private db: DbService, private modal: ModalController, private location: Location) { }
 
   async onChange(date: CalendarComponentPayloadTypes) {
-    const item = this.items.find((o) => dayjs(o.date.toDate()).isSame(date.toString(), 'day')) || dayjs(date.toString());
+    const items = this.items.filter((o) => dayjs(o.date.toDate()).isSame(date.toString(), 'day'));
+    const item = first(orderBy(items, (o => o.created.seconds), ['desc'])) || dayjs(date.toString());
     const modal = await this.modal.create({
       component: ModalDetailComponent,
       cssClass: 'fullscreen',

@@ -77,7 +77,11 @@ function formatText(text: string): string {
 }
 
 function getReason(text: string): string | null {
-  const keyword = text.includes('to ') ? 'to ' : 'for ';
+  let keyword;
+  if (text.includes('to ')) keyword = 'to ';
+  if (text.includes('for ')) keyword = 'for ';
+  if (isUndefined(keyword)) return null;
+  
   const output = text.split(keyword).pop()?.split('.');
   return output ? upperFirst(output[0]) : null;
 }

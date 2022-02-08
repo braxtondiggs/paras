@@ -14,18 +14,11 @@
           <h2>Current Day Notification</h2>
           <ion-note>{{ getNotificationMessage('today', this.settingsForm.value.today) }}</ion-note>
         </ion-label>
-        <ion-select formControlName="today" [interfaceOptions]="{header: 'Current Day Notification'}">
+        <ion-select formControlName="today" interface="popover">
           <ion-select-option value="none">None</ion-select-option>
           <ion-select-option value="immediately">Immediately</ion-select-option>
           <ion-select-option value="custom">Custom</ion-select-option>
         </ion-select>
-      </ion-item>
-      <ion-item [hidden]="true">
-        <ion-label class="ion-text-wrap">
-          <h2>Custom Time</h2>
-          <ion-note>The time you would like to receive a notification</ion-note>
-        </ion-label>
-        <ion-datetime #todayDatePicker formControlName="todayCustom" disp3lay-format="h:mm A" picker-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onTodayChange($event.detail.value)" (ionCancel)="onTodayCancel()"></ion-datetime>
       </ion-item>
     </ion-card>
     <ion-card>
@@ -34,28 +27,50 @@
           <h2>Next Day Notification</h2>
           <ion-note>{{ getNotificationMessage('nextday', this.settingsForm.value.nextDay) }}</ion-note>
         </ion-label>
-        <ion-select formControlName="nextDay" [interfaceOptions]="{header: 'Next Day Notification'}">
+        <ion-select formControlName="nextDay" interface="popover">
           <ion-select-option value="none">None</ion-select-option>
           <ion-select-option value="immediately">Immediately</ion-select-option>
           <ion-select-option value="custom">Custom</ion-select-option>
         </ion-select>
       </ion-item>
-      <ion-item [hidden]="true">
-        <ion-label class="ion-text-wrap">
-          <h2>Custom Time</h2>
-          <ion-note>The time you would like to receive a notification</ion-note>
-        </ion-label>
-        <ion-datetime #nextdayDatePicker formControlName="nextDayCustom" display-format="h:mm A" picker-format="h:mm A" minuteValues="0,15,30,45" (ionChange)="onNextDateChange($event.detail.value)" (ionCancel)="onNextDateCancel()"></ion-datetime>
-      </ion-item>
     </ion-card>
-    <ion-list>
+    <ion-list lines="none">
       <ion-item>
         <ion-label>Exception Notifications Only:</ion-label>
-        <ion-checkbox formControlName="exceptionOnly" (ionChange)="save({exceptionOnly: $event.detail.checked})"></ion-checkbox>
+        <ion-checkbox formControlName="exceptionOnly" (ionChange)="onCheckBoxChange($event, 'exceptionOnly')"></ion-checkbox>
       </ion-item>
       <ion-item>
         <ion-label>Weekend Notifications:</ion-label>
-        <ion-checkbox formControlName="weekend" (ionChange)="save({weekend: $event.detail.checked})"></ion-checkbox>
+        <ion-checkbox formControlName="weekend" (ionChange)="onCheckBoxChange($event, 'weekend')"></ion-checkbox>
+      </ion-item>
+    </ion-list>
+    <br />
+    <ion-list lines="none">
+      <ion-list-header>
+        <ion-label color="primary">Other</ion-label>
+      </ion-list-header>
+      <ion-item>
+        <ion-label>Dark Mode</ion-label>
+        <ion-toggle slot="end" formControlName="darkMode"></ion-toggle>
+        <ion-icon name="moon" slot="start"></ion-icon>
+      </ion-item>
+      <ion-item (click)="about()">
+        <ion-label>
+          About this App
+        </ion-label>
+        <ion-icon name="information-circle" slot="start"></ion-icon>
+      </ion-item>
+      <ion-item (click)="rate()" detail>
+        <ion-label>
+          Rate Us On The App Store
+        </ion-label>
+        <ion-icon name="thumbs-up" slot="start"></ion-icon>
+      </ion-item>
+      <ion-item (click)="donate()" *ngIf="!isiOS">
+        <ion-label>
+          Support Development
+        </ion-label>
+        <ion-icon name="heart" slot="start"></ion-icon>
       </ion-item>
     </ion-list>
   </form>

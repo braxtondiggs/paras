@@ -1,18 +1,20 @@
 <div class="container" *ngIf="!isLoading">
   <div class="horizontal-container">
     <div class="month" *ngIf="active">{{active.month.long}}</div>
-    <div class="slider-container">
-      <ion-slides #slider [options]="slideOpts" (ionSlideDidChange)="onSlideChange()">
-        <ion-slide *ngFor="let item of items; let i = index" class="ion-activatable" (click)="slider.slideTo(i)" [ngClass]="{'active': active.text === item.text, 'notice': hasNotice(item, feed)}">
-          <h6 class="day-short">{{item.day.short}}</h6>
-          <h5 class="day-num">{{item.day.num}}</h5>
-          <ion-ripple-effect></ion-ripple-effect>
-        </ion-slide>
-      </ion-slides>
-      <ion-button fill="clear" color="dark" class="end action-btn" (click)="slider.slideNext()">
+    <div class="swiper-container" *ngIf="items.length">
+      <swiper #swiper [config]="swiperOpts" (slideChange)="onSlideChange()">
+        <ng-template swiperSlide *ngFor="let item of items; let i = index">
+          <div *ngIf="feed" [ngClass]="{'notice': hasNotice(item, feed)}" (click)="swiper.swiperRef.slideTo(i)" class="ion-activatable ripple-parent">
+            <h6 class="day-short">{{item.day.short}}</h6>
+            <h5 class="day-num">{{item.day.num}}</h5>
+            <ion-ripple-effect></ion-ripple-effect>
+          </div>
+        </ng-template>
+      </swiper>
+     <ion-button fill="clear" color="dark" class="end action-btn" (click)="swiper.swiperRef.slideNext()">
         <ion-icon slot="icon-only" name="arrow-forward"></ion-icon>
       </ion-button>
-      <ion-button fill="clear" color="dark" class="start action-btn" (click)="slider.slidePrev()">
+      <ion-button fill="clear" color="dark" class="start action-btn" (click)="swiper.swiperRef.slidePrev()">
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </div>

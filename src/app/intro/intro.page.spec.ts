@@ -1,24 +1,20 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { createComponentFactory, Spectator } from '@ngneat/spectator/jest';
+import { RouterTestingModule } from '@angular/router/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { IntroPage } from './intro.page';
 
 describe('IntroPage', () => {
-  let component: IntroPage;
-  let fixture: ComponentFixture<IntroPage>;
+  const createComponent = createComponentFactory({
+    component: IntroPage,
+    imports: [IonicModule.forRoot(), RouterTestingModule]
+  });
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ IntroPage ],
-      imports: [IonicModule.forRoot()]
-    }).compileComponents();
+  let spectator: Spectator<IntroPage>;
+  beforeEach(() => spectator = createComponent());
 
-    fixture = TestBed.createComponent(IntroPage);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should create', async () => {
+    const app = spectator.component;
+    expect(app).toBeTruthy();
   });
 });

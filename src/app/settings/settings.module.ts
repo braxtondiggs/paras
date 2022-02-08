@@ -4,7 +4,8 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
-
+import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
+import { InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
 import { SettingsPage } from './settings.page';
 
 @NgModule({
@@ -20,6 +21,7 @@ import { SettingsPage } from './settings.page';
       }
     ])
   ],
-  declarations: [SettingsPage]
+  declarations: [SettingsPage],
+  providers: [LaunchReview, InAppPurchase2]
 })
 export class SettingsPageModule { }

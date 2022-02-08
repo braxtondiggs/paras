@@ -7,7 +7,7 @@
     "adjacent-overload-signatures": true,
 
     // Do not allow the subtle/obscure comma operator.
-    "ban-comma-operator": true,
+    "ban-comma-operator": false,
 
     // Do not allow internal modules or namespaces . These are deprecated in favor of ES6 modules.
     "no-namespace": true,

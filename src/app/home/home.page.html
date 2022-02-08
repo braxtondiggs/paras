@@ -12,12 +12,12 @@
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
-  <ion-slides #slider [options]="slideOpts">
-    <ion-slide>
+  <swiper #swiper [config]="swiperOpts">
+    <ng-template swiperSlide>
       <horizontal-calendar></horizontal-calendar>
-    </ion-slide>
-    <ion-slide>
-      <ion-calendar #calendar [(ngModel)]="date" (change)="onSelect($event)" (monthChange)="onMonthChange($event)" type="string" [format]="'YYYY-MM-DD'" [options]="calendarOpts"></ion-calendar>
-    </ion-slide>
-  </ion-slides>
+    </ng-template>
+    <ng-template swiperSlide>
+      <ion-calendar #calendar [(ngModel)]="date" (change)="onChange($event)" (monthChange)="onMonthChange($event)" type="string" [format]="'YYYY-MM-DD'" [options]="calendarOpts"></ion-calendar>
+    </ng-template>
+  </swiper>
 </ion-content>

@@ -1,19 +1,10 @@
 {
   "appId": "com.cymbit.paras",
-  "appName": "paras",
+  "appName": "ASP NYC",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",
-  "cordova": {
-    "preferences": {
-      "ScrollEnabled": "false",
-      "android-minSdkVersion": "19",
-      "BackupWebStorage": "none",
-      "SplashMaintainAspectRatio": "true",
-      "FadeSplashScreenDuration": "300",
-      "SplashShowOnlyFirstTime": "false",
-      "SplashScreen": "screen",
-      "SplashScreenDelay": "3000"
-    }
+  "PushNotifications": {
+    "presentationOptions": ["badge", "sound", "alert"]
   }
 }

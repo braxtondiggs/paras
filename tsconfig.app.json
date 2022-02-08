@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": []
+    "types": [],
+    "skipLibCheck": true // TODO: Remove this ion-calender
   },
   "files": [
     "src/main.ts",

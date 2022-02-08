@@ -2,13 +2,12 @@ import * as admin from 'firebase-admin';
 import db from './db';
 import * as dayjs from 'dayjs';
 import * as weekday from 'dayjs/plugin/weekday';
-dayjs.extend(weekday)
+import { isEmpty } from 'lodash';
+dayjs.extend(weekday);
 
 const payload: admin.messaging.MessagingPayload = {
   notification: {
-    title: 'Alternate Side Parking',
-    icon: 'notification_icon',
-    color: "#74b9ff"
+    title: 'Alternate Side Parking'
   }
 };
 export async function FCM(type?: string, tweet?: any) {
@@ -28,7 +27,7 @@ async function getImmediateNotifications(tweet: any) {
   for (const snapshot of promise) {
     const { exceptionOnly, nextDay, today, token, weekend } = snapshot.data();
     if (payload.notification) payload.notification.body = tweet.text;
-    if (token && (today === 'immediately' && isToday) || (nextDay === 'immediately' && !isToday)) {
+    if (token && !isEmpty(token) && (today === 'immediately' && isToday) || (nextDay === 'immediately' && !isToday)) {
       if (checkWeekend(weekend, dayjs(tweet.date)) && checkException(exceptionOnly, tweet.active)) {
         tokens.push(token);
       }
@@ -59,7 +58,7 @@ async function getCustomNotifications() {
     date = isToday ? `${date} ${todayCustom}` : `${date} ${nextDayCustom}`;
     isActive = dayjs(date).isAfter(dayjs()) && dayjs(date).isBefore(dayjs().add(15, 'minute'));
     if ((today === 'custom' && isToday && isActive) || (nextDay === 'custom' && !isToday && isActive)) {
-      if (checkWeekend(weekend, dayjs(date)) && checkException(exceptionOnly, isActive)) {
+      if (token && !isEmpty(token) && checkWeekend(weekend, dayjs(date)) && checkException(exceptionOnly, isActive)) {
         tokens.push(token);
       }
     }

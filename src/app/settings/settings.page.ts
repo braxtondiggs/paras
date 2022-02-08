@@ -1,151 +1,295 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { DbService, AuthService, FcmService } from '../core/services';
+import { DbService, AuthService } from '../core/services';
 import { Setting } from '../core/interface';
-import * as moment from 'moment';
-import { omitBy, isNil } from 'lodash-es';
-import { distinctUntilChanged, take } from 'rxjs/operators';
-import { AlertController, IonDatetime, LoadingController, ToastController } from '@ionic/angular';
+import { omitBy, isNil, isEmpty, range } from 'lodash-es';
+import { take } from 'rxjs/operators';
+import { AlertController, PickerController, LoadingController, ToastController, Platform } from '@ionic/angular';
+import { Storage } from '@capacitor/storage';
+import { EmailComposer } from 'capacitor-email-composer';
+import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
+import { InAppPurchase2, IAPProduct } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
+import dayjs, { Dayjs } from 'dayjs';
+import objectSupport from 'dayjs/plugin/objectSupport';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
 })
 export class SettingsPage implements OnInit {
-  uid: string;
+  uid?: string;
   settings: Setting;
   settingsForm: FormGroup;
   isLoading = true;
-  format = 'h:mm A z';
-  @ViewChild('todayDatePicker') today: IonDatetime;
-  @ViewChild('nextdayDatePicker') nextday: IonDatetime;
+  format = 'H:mm';
+  isFirst = false;
+  token?: string | null;
+  isiOS?: boolean;
   constructor(
     fb: FormBuilder,
     private alert: AlertController,
-    private db: DbService,
     private auth: AuthService,
-    private fcm: FcmService,
+    private db: DbService,
+    private launchReview: LaunchReview,
     private loading: LoadingController,
+    private picker: PickerController,
+    private platform: Platform,
+    private store: InAppPurchase2,
     private toast: ToastController) {
+    dayjs.extend(objectSupport);
+    dayjs.extend(customParseFormat);
     this.settings = {
       today: 'none',
-      todayCustom: moment().format(),
+      todayCustom: dayjs().format(this.format),
       nextDay: 'none',
-      nextDayCustom: moment().format(),
+      nextDayCustom: dayjs().format(this.format),
       exceptionOnly: false,
-      weekend: false
+      weekend: false,
+      darkMode: false
     };
     this.settingsForm = fb.group(this.settings);
+    this.isiOS = this.platform.is('ios');
   }
 
   async ngOnInit() {
-    this.uid = await this.auth.uid();
     const loading = await this.loading.create();
     loading.present();
-    this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe((settings: Setting) => {
-      settings = {
-        ...settings,
-        todayCustom: moment.utc(settings.todayCustom, this.format).local().format(),
-        nextDayCustom: moment.utc(settings.nextDayCustom, this.format).local().format()
-      };
-      this.settingsForm.patchValue({ ...this.settings, ...settings }, { emitEvent: false, onlySelf: true });
-      this.settings = settings;
+    this.uid = await this.auth.uid();
+    const { value } = await Storage.get({ key: 'token' });
+    this.token = value;
+    this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe(async (settings: Setting) => {
+      this.isFirst = isEmpty(settings.updateAt);
+      if (settings.todayCustom) settings.todayCustom = dayjs().set(this.getTime(settings.todayCustom)).format(this.format);
+      if (settings.nextDayCustom) settings.nextDayCustom = dayjs().set(this.getTime(settings.nextDayCustom)).format(this.format);
+      this.settings = { ...this.settings, ...settings };
+      const { value } = await Storage.get({ key: 'darkMode' });
+      if (value === 'true') this.settings.darkMode = true;
+      this.settingsForm.patchValue(this.settings, { emitEvent: false, onlySelf: true });
       setTimeout(() => {
         this.isLoading = false;
         loading.dismiss();
       });
     });
 
-    this.settingsForm.controls.today.valueChanges.pipe(distinctUntilChanged()).subscribe(async (today) => {
-      if (!today) { return; }
-      if (today === 'custom') {
-        await this.today.open();
-      } else {
-        this.save({ today });
-      }
+    this.settingsForm.controls['today'].valueChanges.subscribe(today => {
+      if (!today) return;
+      if (today === 'custom') return this.openTimePicker('today');
+      this.save({ today });
     });
 
-    this.settingsForm.controls.nextDay.valueChanges.pipe(distinctUntilChanged()).subscribe(async (nextDay) => {
-      if (!nextDay) { return; }
-      if (nextDay === 'custom') {
-        await this.nextday.open();
-      } else {
-        this.save({ nextDay });
-      }
+    this.settingsForm.controls['nextDay'].valueChanges.subscribe(nextDay => {
+      if (!nextDay) return;
+      if (nextDay === 'custom') return this.openTimePicker('nextDay');
+      this.save({ nextDay });
     });
+
+    this.settingsForm.controls['darkMode'].valueChanges.subscribe(async (value) => {
+      await Storage.set({ key: 'darkMode', value: value.toString() });
+      document.body.classList.toggle('dark', value);
+    });
+  }
+
+  onCheckBoxChange(ev: Event, action: string) {
+    this.save({ [action]: (ev as any).detail.checked });
   }
 
   save(data: Setting): void {
     let t: HTMLIonToastElement;
-    data = omitBy({ ...data, token: this.fcm.token, type: 'NYC' }, isNil);
-    this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
-      t = await this.toast.create({
-        color: 'dark',
-        duration: 1500,
-        message: 'Your settings have been saved.'
+    const createdAt = this.isFirst ? new Date() : null;
+    data = omitBy({ ...data, token: this.token, type: 'NYC', updateAt: new Date(), createdAt }, isNil);
+    if (!isEmpty(data.token)) {
+      this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
+        t = await this.toast.create({
+          color: 'dark',
+          duration: 1500,
+          message: 'Your settings have been saved.'
+        });
+      }).catch(async () => {
+        t = await this.toast.create({
+          color: 'dark',
+          duration: 1500,
+          message: 'An error has occured.'
+        });
+      }).finally(() => {
+        t.present();
+        this.isFirst = false;
       });
-    }).catch(async () => {
-      t = await this.toast.create({
-        color: 'dark',
-        duration: 1500,
-        message: 'An error has occured.'
-      });
-    }).finally(() => {
-      t.present();
-    });
+    }
+  }
+
+  private getTime(time: string): { hour: number, minute: number } {
+    if (!time) return { hour: dayjs().get('hour'), minute: dayjs().get('minute') };
+    const [hour, minute] = time.split(':');
+    return { hour: +hour, minute: +minute };
   }
 
   getNotificationMessage(type: string, action: string): string {
-    const time = type === 'today' ? this.settingsForm.value.todayCustom : this.settingsForm.value.nextDayCustom;
+    const time = type === 'today' ? this.settings.todayCustom : this.settings.nextDayCustom;
     switch (action) {
       case 'none':
         return 'Get notified about alternate side parking';
       case 'immediately':
         return `Next notification around ${type === 'today' ? '7:30AM' : '4:00PM'}`;
       case 'custom':
-        return `Next notification at ${moment(time).format('h:mm A')}`;
+        return `Next notification at ${dayjs(time, 'H:mm').format('h:mm A')}`;
       default:
-        break;
+        return '';
     }
   }
 
   async onTodayChange(date: string) {
-    if (moment(date, 'YYYY-MM-DD HH:mmZ').isBefore(moment().set({ hour: 7, minute: 29 }))) {
-      const alert = await this.alert.create({
-        header: 'Invalid Time',
-        message: 'The time you have selected is too early, please select a time before 7:30AM.',
-        buttons: [{
-          text: 'Okay',
-          handler: () => { this.settingsForm.controls.today.patchValue(this.settings.today); }
-        }]
-      });
-      await alert.present();
-      return;
-    }
-    this.save({ today: this.settingsForm.value.today, todayCustom: moment.utc(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
+    const maxTime = dayjs().set({ hour: 7, minute: 29 });
+    if (dayjs(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
+    this.settings.todayCustom = dayjs(date, 'h:mmA').format(this.format);
+    this.save({ today: this.settingsForm.value.today, todayCustom: this.settings.todayCustom });
   }
 
   onTodayCancel() {
-    this.settingsForm.controls.today.patchValue(this.settings.today);
+    this.settingsForm.controls['today'].patchValue(this.settings.today);
   }
 
   async onNextDateChange(date: string) {
-    if (moment(date, 'YYYY-MM-DD HH:mmZ').isBefore(moment().set({ hour: 15, minute: 59 }))) {
-      const alert = await this.alert.create({
-        header: 'Invalid Time',
-        message: 'The time you have selected is too early, please select a time before 4:00PM.',
-        buttons: [{
-          text: 'Okay',
-          handler: () => { this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay); }
-        }]
-      });
-      await alert.present();
-      return;
-    }
-    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: moment.utc(date, 'YYYY-MM-DD HH:mmZ').format(this.format) });
+    const maxTime = dayjs().set({ hour: 15, minute: 59 });
+    if (dayjs(date, 'h:mmA').isBefore(maxTime)) return this.showAlert(maxTime);
+    this.settings.nextDayCustom = dayjs(date, 'h:mmA').format(this.format);
+    this.save({ nextDay: this.settingsForm.value.nextDay, nextDayCustom: this.settings.nextDayCustom });
   }
 
   onNextDateCancel() {
-    this.settingsForm.controls.nextDay.patchValue(this.settings.nextDay);
+    this.settingsForm.controls['nextDay'].patchValue(this.settings.nextDay);
+  }
+
+  async rate() {
+    if (this.launchReview.isRatingSupported()) {
+      await this.launchReview.launch();
+    } else {
+      this.launchReview.rating().subscribe();
+    }
+  }
+
+  async about() {
+    const alert = await this.alert.create({
+      header: 'ASP For NYC',
+      message: 'This app was built and designed by Braxton Diggs of Cymbit Creative Studios.<br /><br />For more info and inquiries, email us at <strong>braxtondiggs@gmail.com</strong>',
+      buttons: [
+        {
+          text: 'Dismiss',
+          role: 'cancel'
+        }, {
+          text: 'Contact Us',
+          handler: async () => {
+            const { hasAccount } = await EmailComposer.hasAccount();
+            if (hasAccount) {
+              EmailComposer.open({ to: ['braxtondiggs@gmail.com'], subject: 'ASP for NYC', isHtml: false, body: '' });
+            } else {
+              window.open('mailto:someone@example.com?subject=ASP%20for%20NYC', '_system');
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async donate() {
+    const alert = await this.alert.create({
+      header: 'Support Development',
+      message: 'Hello, there! Hundreds of hours have been put into developing and perfecting ASP, so if you use this app quite often, why not considering supporting development.<br /><br />Your support ensures that we can keep up development, keeping the app alive.',
+      buttons: [
+        {
+          text: 'No, Thanks',
+          role: 'cancel'
+        }, {
+          text: 'Yes, Please',
+          handler: () => {
+            this.store.register({
+              id: 'donation_99',
+              type: this.store.CONSUMABLE,
+            });
+
+            this.store.when('donation_99')
+              .approved((p: IAPProduct) => p.verify())
+              .verified(async (p: IAPProduct) => {
+                p.finish();
+                const toast = await this.toast.create({ message: 'Your support is always appreciated!', duration: 10000 });
+                toast.present();
+              })
+              .error(async () => {
+                const toast = await this.toast.create({ message: 'Something went wrong', duration: 10000 });
+                toast.present();
+              });
+            this.store.refresh();
+
+            this.store.order('donation_99');
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async showAlert(maxTime: Dayjs) {
+    const time: string = maxTime.add(1, 'minute').format('h:mm A').toString();
+    const alert = await this.alert.create({
+      header: 'Invalid Time',
+      message: `The time you have selected is too early, please select a time before ${time}.`,
+      buttons: [{
+        text: 'Okay',
+        handler: () => this.settingsForm.controls['nextDay'].patchValue(this.settings.nextDay)
+      }]
+    });
+    await alert.present();
+  }
+
+  async openTimePicker(action: string = 'today') {
+    const data = action === 'today' ? this.settings.todayCustom : this.settings.nextDayCustom;
+    const time = dayjs(data, this.format);
+    const hour = time.get('hour');
+    const minute = time.get('minute');
+    const period = hour >= 12 ? 'PM' : 'AM';
+    let m = ((Math.round(minute / 15) * 15) % 60).toString();
+    if (m === '0') m = '00';
+    const picker = await this.picker.create({
+      buttons: [{
+        text: 'Cancel',
+        role: 'cancel'
+      }, {
+        text: 'Done',
+        role: 'save',
+        handler: (o) => {
+          const date = `${o.hours.text}:${o.minutes.text}${o.periods.text}`;
+          if (action === 'today') this.onTodayChange(date);
+          if (action === 'nextDay') this.onNextDateChange(date);
+        },
+      }],
+      columns: [
+        {
+          name: 'hours',
+          selectedIndex: range(1, 13).findIndex(o => o == hour),
+          options: range(1, 13).map(o => ({ text: o.toString() }))
+        },
+        {
+          name: 'minutes',
+          selectedIndex: ['00', '15', '30', '45'].findIndex(o => o == m),
+          options: ['00', '15', '30', '45'].map(text => ({ text }))
+        },
+        {
+          name: 'periods',
+          selectedIndex: ['AM', 'PM'].findIndex(o => o == period.toString()),
+          options: ['AM', 'PM'].map(text => ({ text }))
+        },
+      ]
+    });
+    await picker.present();
+
+    picker.onDidDismiss().then((event) => {
+      if (event.role === 'backdrop') {
+
+      }
+    });
   }
 }

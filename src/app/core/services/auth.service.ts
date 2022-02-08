@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Observable, of } from 'rxjs';
 import { switchMap, take, map } from 'rxjs/operators';
+import { Storage } from '@capacitor/storage';
 import { DbService } from './db.service';
 
 @Injectable({
@@ -16,15 +17,21 @@ export class AuthService {
   }
 
   async anonymousLogin() {
-    const credential = await this.afAuth.auth.signInAnonymously();
-    return await this.updateUserData(credential.user);
+    const credential = await this.afAuth.signInAnonymously();
+    if (credential.user) {
+      await Storage.set({ key: 'uid', value: credential.user.uid });
+      return await this.updateUserData(credential.user);
+    } else {
+      await Storage.set({ key: 'uid', value: 'null' });
+      // TODO: Hide Setting If No UID
+    }
   }
 
   uid(): Promise<any> {
     return this.user$.pipe(take(1), map(u => u && u.uid)).toPromise();
   }
 
-  private updateUserData({ uid, }) {
+  private updateUserData({ uid }: { uid: string }) {
     const path = `users/${uid}`;
     const data = { uid, created: new Date() };
     return this.db.updateAt(path, data);

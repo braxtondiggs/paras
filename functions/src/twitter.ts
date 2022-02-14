@@ -19,7 +19,7 @@ const client = new Twitter({
   access_token_secret: 'E8n1eJgnKrTHQrZ6NToaYiewHRWE0c1DT7HxYixa2jnYh'
 });
 
-export async function getNYFeed(_request: functions.Request, response: functions.Response): Promise<any> {
+async function getNYFeed(_request: functions.Request, response: functions.Response): Promise<any> {
   const tweets = await client.get('statuses/user_timeline', { screen_name: 'NYCASP', count: 1 });
   const promise: any[] = [];
   const ID = dayjs().get('hour') <= 12 ? 'e6cbd04c-ae72-4670-820a-9a5a89148f53' : 'c8851266-e255-4e0a-bafa-1fd85863b0c2';
@@ -52,6 +52,35 @@ export async function getNYFeed(_request: functions.Request, response: functions
   return response.status(200).send('Ok');
 }
 
+async function twitterComments(request: functions.Request, response: functions.Response): Promise<any> {
+  try {
+
+    if (request.method !== 'POST' || !request.body.id) return response.status(500);
+
+    const puppeteer = require('puppeteer');
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const page = await browser.newPage();
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36"
+    );
+    await page.goto(`https://twitter.com/NYCASP/status/${request.body.id}`, { waitUntil: 'networkidle2' });
+
+    const comments = await page.$$eval('article div[lang]', (tweets: any[]) => tweets.map((tweet) => tweet.textContent));
+    const name = await page.$$eval('article a[href] div div[dir="auto"] > span', (tweets: any[]) => tweets.map((tweet) => tweet.textContent));
+    const image = await page.$$eval('article img[src][draggable="true"]', (tweets: any[]) => tweets.map((tweet) => tweet.getAttribute('src')));
+
+
+    await browser.close();
+    return response.json(comments.map((text: string, i: number) => ({
+      image: image[i],
+      name: name[i],
+      text
+    })));
+  } catch (e: any) {
+    return response.status(500).send(e.toString());
+  }
+}
+
 function getDate(text: string): Date[] | undefined {
   const sherlocked = Sherlock.parse(text);
   if (isNull(sherlocked.startDate) && isNull(sherlocked.endDate)) return;
@@ -81,7 +110,7 @@ function getReason(text: string): string | null {
   if (text.includes('to ')) keyword = 'to ';
   if (text.includes('for ')) keyword = 'for ';
   if (isUndefined(keyword)) return null;
-  
+
   const output = text.split(keyword).pop()?.split('.');
   return output ? upperFirst(output[0]) : null;
 }
@@ -93,3 +122,5 @@ function getDaysArray(start: Date, end: Date): Date[] {
   }
   return arr;
 };
+
+export { getNYFeed, twitterComments };

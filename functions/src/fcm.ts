@@ -28,7 +28,7 @@ async function getImmediateNotifications(tweet: any) {
     const { exceptionOnly, nextDay, today, token, weekend } = snapshot.data();
     if (payload.notification) payload.notification.body = tweet.text;
     if (token && !isEmpty(token) && (today === 'immediately' && isToday) || (nextDay === 'immediately' && !isToday)) {
-      if (checkWeekend(weekend, dayjs(tweet.date), tweet.active) && checkException(exceptionOnly, tweet.active)) {
+      if (checkWeekend(weekend, dayjs(tweet.date)) && checkException(exceptionOnly, tweet.active)) {
         tokens.push(token);
       }
     }
@@ -58,7 +58,7 @@ async function getCustomNotifications() {
     date = isToday ? `${date} ${todayCustom}` : `${date} ${nextDayCustom}`;
     isActive = dayjs(date).isAfter(dayjs()) && dayjs(date).isBefore(dayjs().add(15, 'minute'));
     if ((today === 'custom' && isToday && isActive) || (nextDay === 'custom' && !isToday && isActive)) {
-      if (token && !isEmpty(token) && checkWeekend(weekend, dayjs(date), isActive) && checkException(exceptionOnly, isActive)) {
+      if (token && !isEmpty(token) && checkWeekend(weekend, dayjs(date)) && checkException(exceptionOnly, isActive)) {
         tokens.push(token);
       }
     }
@@ -85,8 +85,8 @@ async function sendToDevices(tokens: string[], promise: FirebaseFirestore.QueryD
   return Promise.all(deadTokens);
 }
 
-function checkWeekend(weekend: boolean, date: dayjs.Dayjs, active: boolean): boolean {
-  return weekend && (date.weekday() === 6 || date.weekday() === 0) || !weekend && !active && date.weekday() !== 6 && date.weekday() !== 0;
+function checkWeekend(weekend: boolean, date: dayjs.Dayjs): boolean {
+  return weekend && (date.weekday() === 6 || date.weekday() === 0) || !weekend && date.weekday() !== 6 && date.weekday() !== 0;
 }
 
 function checkException(exception: boolean, active: boolean): boolean {

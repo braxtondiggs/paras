@@ -9,7 +9,7 @@ dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 dayjs.tz.setDefault('America/New_York');
 
-export async function getNYCalender(_request: functions.Request, response: functions.Response) {
+export async function NYCalender(_request: functions.Request, response: functions.Response) {
    // const uri = 'https://www1.nyc.gov/html/dot/html/motorist/alternate-side-parking.shtml';
    const year = 2022;
    const $ = cheerio.load(getHTML());

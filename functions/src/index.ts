@@ -1,9 +1,17 @@
 import * as functions from 'firebase-functions';
-import { getNYFeed, twitterComments /*getNJfeed*/ } from './twitter';
-import { FCM } from './fcm';
-import { getNYCalender } from './calendar';
+import * as cors from 'cors';
+import * as express from 'express';
 
-export const NYFeed = functions.https.onRequest(getNYFeed);
+import { NYFeed, TwitterComments /*NJfeed*/ } from './twitter';
+import { FCM } from './fcm';
+import { NYCalender } from './calendar';
+
+const app = express();
+app.use(cors({ origin: true }));
+
+app.get('/nyc/feed', NYFeed);
+app.get('/nyc/calender', NYCalender);
+app.get('/nyc/comments/:id', TwitterComments);
+
+exports.endpoints = functions.runWith({ memory: '1GB' }).https.onRequest(app);
 export const FCMNotification = functions.pubsub.schedule('every 15 minutes').timeZone('America/New_York').onRun(() => FCM());
-export const NYCalender = functions.https.onRequest(getNYCalender); 
-export const TwiiterComments = functions.https.onRequest(twitterComments); 

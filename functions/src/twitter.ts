@@ -19,7 +19,7 @@ const client = new Twitter({
   access_token_secret: 'E8n1eJgnKrTHQrZ6NToaYiewHRWE0c1DT7HxYixa2jnYh'
 });
 
-async function getNYFeed(_request: functions.Request, response: functions.Response): Promise<any> {
+async function NYFeed(_request: functions.Request, response: functions.Response): Promise<any> {
   const tweets = await client.get('statuses/user_timeline', { screen_name: 'NYCASP', count: 1 });
   const promise: any[] = [];
   const ID = dayjs().get('hour') <= 12 ? 'e6cbd04c-ae72-4670-820a-9a5a89148f53' : 'c8851266-e255-4e0a-bafa-1fd85863b0c2';
@@ -30,13 +30,13 @@ async function getNYFeed(_request: functions.Request, response: functions.Respon
     const metered = isMetered(tweet.text.toLowerCase());
     if (!isUndefined(dates) && !isNull(active)) {
       dates.forEach((date, index) => {
-        const id = index === 0 ? tweet.id : `${tweet.id}-${index}`;
+        const id = index === 0 ? tweet.id_str : `${tweet.id_str}-${index}`;
 
         data = {
           active,
           created: dayjs(tweet.created_at).toDate(),
           date: dayjs(date).add(5, 'h').toDate(), // UTC
-          id: tweet.id,
+          id: tweet.id_str,
           metered,
           reason: getReason(tweet.text),
           text: formatText(tweet.text),
@@ -52,10 +52,10 @@ async function getNYFeed(_request: functions.Request, response: functions.Respon
   return response.status(200).send('Ok');
 }
 
-async function twitterComments(request: functions.Request, response: functions.Response): Promise<any> {
+async function TwitterComments(request: functions.Request, response: functions.Response): Promise<any> {
   try {
 
-    if (request.method !== 'POST' || !request.body.id) return response.status(500);
+    if (!request.params.id) return response.status(500);
 
     const puppeteer = require('puppeteer');
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
@@ -63,7 +63,7 @@ async function twitterComments(request: functions.Request, response: functions.R
     await page.setUserAgent(
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36"
     );
-    await page.goto(`https://twitter.com/NYCASP/status/${request.body.id}`, { waitUntil: 'networkidle2' });
+    await page.goto(`https://twitter.com/NYCASP/status/${request.params.id}`, { waitUntil: 'networkidle2' });
 
     const comments = await page.$$eval('article div[lang]', (tweets: any[]) => tweets.map((tweet) => tweet.textContent));
     const name = await page.$$eval('article a[href] div div[dir="auto"] > span', (tweets: any[]) => tweets.map((tweet) => tweet.textContent));
@@ -123,4 +123,4 @@ function getDaysArray(start: Date, end: Date): Date[] {
   return arr;
 };
 
-export { getNYFeed, twitterComments };
+export { NYFeed, TwitterComments };

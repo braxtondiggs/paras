@@ -27,4 +27,5 @@
       <div class="updated" *ngIf="detail.lastUpdated">Updated {{detail.created}}</div>
     </ion-card-content>
   </ion-card>
+  <app-twitter-comments *ngIf="detail && showComments" [date]="date"></app-twitter-comments>
 </div>

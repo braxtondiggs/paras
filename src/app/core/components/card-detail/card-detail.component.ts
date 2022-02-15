@@ -11,7 +11,9 @@ import advancedFormat from 'dayjs/plugin/advancedFormat';
 })
 export class CardDetailComponent implements OnChanges {
   detail?: Item;
+  date?: Date;
   @Input() item?: Feed | Dayjs;
+  @Input() showComments: boolean = false;
 
   ngOnChanges(changes: SimpleChanges) {
     dayjs.extend(relativeTime);
@@ -20,6 +22,7 @@ export class CardDetailComponent implements OnChanges {
     if (currentItem.currentValue) {
       const data: Feed | Dayjs = changes['item'].currentValue;
       if (!dayjs.isDayjs(data)) {
+        this.date = data.date.toDate();
         this.detail = {
           ...data,
           created: dayjs(data.created.toDate()).fromNow(),
@@ -28,6 +31,7 @@ export class CardDetailComponent implements OnChanges {
           dayjs(data.date.toDate()).isSame(dayjs().add(1, 'day'), 'day')
         };
       } else {
+        this.date = data.toDate();
         this.detail = {
           active: true,
           created: data.fromNow(),

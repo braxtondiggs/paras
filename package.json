@@ -54,7 +54,7 @@
     "firebase": "8.0.0",
     "ion2-calendar": "^3.5.0",
     "lodash-es": "^4.17.15",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "rxfire": "^4.0.0",
     "rxjs": "^6.5.3",
     "swiper": "^7.3.4",

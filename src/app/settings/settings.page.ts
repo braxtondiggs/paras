@@ -172,7 +172,7 @@ export class SettingsPage implements OnInit {
   async about() {
     const alert = await this.alert.create({
       header: 'ASP For NYC',
-      message: 'This app was built and designed by Braxton Diggs of Cymbit Creative Studios.<br /><br />For more info and inquiries, email us at <strong>braxtondiggs@gmail.com</strong>',
+      message: 'This app was built and designed by Braxton Diggs of Cymbit Creative Studios.<br /><br />For more info and inquiries, email us at <strong>hello@braxtondiggs.com</strong>',
       buttons: [
         {
           text: 'Dismiss',
@@ -182,7 +182,7 @@ export class SettingsPage implements OnInit {
           handler: async () => {
             const { hasAccount } = await EmailComposer.hasAccount();
             if (hasAccount) {
-              EmailComposer.open({ to: ['braxtondiggs@gmail.com'], subject: 'ASP for NYC', isHtml: false, body: '' });
+              EmailComposer.open({ to: ['hello@braxtondiggs.com'], subject: 'ASP for NYC', isHtml: false, body: '' });
             } else {
               window.open('mailto:someone@example.com?subject=ASP%20for%20NYC', '_system');
             }

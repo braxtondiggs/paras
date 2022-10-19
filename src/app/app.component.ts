@@ -20,7 +20,7 @@ export class AppComponent {
     await this.platform.ready();
     if (!this.platform.is('cordova')) return;
     if (!await Network.getStatus()) await this.showNetworkAlert();
-    this.getFCMNotification();
+    if (!this.platform.is('ios')) this.getFCMNotification();
   }
 
   private getFCMNotification() {

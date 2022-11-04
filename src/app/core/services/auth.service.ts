@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Auth, signInAnonymously, user, User } from '@angular/fire/auth';
 import { Analytics,  setUserId } from '@angular/fire/analytics';
 import { doc, Firestore, setDoc } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable } from 'rxjs';
 import { take, map } from 'rxjs/operators';
 import { traceUntilFirst } from '@angular/fire/performance';
 import { Storage } from '@capacitor/storage';
@@ -11,9 +11,9 @@ import { Storage } from '@capacitor/storage';
   providedIn: 'root'
 })
 export class AuthService {
-  user$: Observable<User | null>;
+  public readonly user$: Observable<User | null> = EMPTY;
   constructor(private auth: Auth, private afs: Firestore, private analytics: Analytics) {
-    this.user$ = user(auth);
+    this.user$ = user(auth).pipe(traceUntilFirst('auth'));
   }
 
   async anonymousLogin() {

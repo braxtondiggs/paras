@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Analytics, setUserProperties } from '@angular/fire/analytics';
+import { Performance } from '@angular/fire/performance';
 import { Platform, AlertController } from '@ionic/angular';
 import { PushNotifications, Token } from '@capacitor/push-notifications';
 import { Network } from '@capacitor/network';
@@ -15,6 +16,7 @@ import { filter, map } from 'rxjs/operators';
 })
 export class AppComponent {
   constructor(
+    _performance: Performance, // Note: this is unused, but it's here to ensure the performance module is loaded
     private alert: AlertController,
     private analytics: Analytics,
     private platform: Platform,

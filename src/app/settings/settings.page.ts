@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { DbService, AuthService } from '../core/services';
+import { Analytics,logEvent, setUserProperties } from '@angular/fire/analytics';
+import { doc, docData, DocumentReference, Firestore, setDoc, } from '@angular/fire/firestore';
+import { traceUntilFirst } from '@angular/fire/performance';
+import { AuthService } from '../core/services';
 import { Setting } from '../core/interface';
 import { omitBy, isNil, isEmpty, range } from 'lodash-es';
-import { take } from 'rxjs/operators';
 import { AlertController, PickerController, LoadingController, ToastController, Platform } from '@ionic/angular';
 import { Storage } from '@capacitor/storage';
 import { EmailComposer } from 'capacitor-email-composer';
@@ -19,7 +21,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
   styleUrls: ['./settings.page.scss'],
 })
 export class SettingsPage implements OnInit {
-  uid?: string;
+  uid?: string | null;
   settings: Setting;
   settingsForm: FormGroup;
   isLoading = true;
@@ -30,8 +32,9 @@ export class SettingsPage implements OnInit {
   constructor(
     fb: FormBuilder,
     private alert: AlertController,
+    private analytics: Analytics,
     private auth: AuthService,
-    private db: DbService,
+    private afs: Firestore,
     private launchReview: LaunchReview,
     private loading: LoadingController,
     private picker: PickerController,
@@ -57,21 +60,25 @@ export class SettingsPage implements OnInit {
     const loading = await this.loading.create();
     loading.present();
     this.uid = await this.auth.uid();
-    const { value } = await Storage.get({ key: 'token' });
-    this.token = value;
-    this.db.doc$(`notifications/${this.uid}`).pipe(take(1)).subscribe(async (settings: Setting) => {
-      this.isFirst = isEmpty(settings.updateAt);
-      if (settings.todayCustom) settings.todayCustom = dayjs().set(this.getTime(settings.todayCustom)).format(this.format);
-      if (settings.nextDayCustom) settings.nextDayCustom = dayjs().set(this.getTime(settings.nextDayCustom)).format(this.format);
-      this.settings = { ...this.settings, ...settings };
-      const { value } = await Storage.get({ key: 'darkMode' });
-      if (value === 'true') this.settings.darkMode = true;
-      this.settingsForm.patchValue(this.settings, { emitEvent: false, onlySelf: true });
-      setTimeout(() => {
-        this.isLoading = false;
-        loading.dismiss();
+    if (this.uid) {
+      const { value } = await Storage.get({ key: 'token' });
+      this.token = value;
+      docData<Setting>(
+        doc(this.afs, `notifications/${this.uid}`) as DocumentReference<Setting>
+      ).pipe(traceUntilFirst('getUserNotifications')).subscribe(async (settings: Setting = {}) => {
+        this.isFirst = isEmpty(settings.updateAt);
+        if (settings.todayCustom) settings.todayCustom = dayjs().set(this.getTime(settings.todayCustom)).format(this.format);
+        if (settings.nextDayCustom) settings.nextDayCustom = dayjs().set(this.getTime(settings.nextDayCustom)).format(this.format);
+        this.settings = { ...this.settings, ...settings };
+        const { value } = await Storage.get({ key: 'darkMode' });
+        if (value === 'true') this.settings.darkMode = true;
+        this.settingsForm.patchValue(this.settings, { emitEvent: false, onlySelf: true });
+        setTimeout(() => {
+          this.isLoading = false;
+          loading.dismiss();
+        });
       });
-    });
+    }
 
     this.settingsForm.controls['today'].valueChanges.subscribe(today => {
       if (!today) return;
@@ -88,11 +95,16 @@ export class SettingsPage implements OnInit {
     this.settingsForm.controls['darkMode'].valueChanges.subscribe(async (value) => {
       await Storage.set({ key: 'darkMode', value: value.toString() });
       document.body.classList.toggle('dark', value);
+      logEvent(this.analytics, 'custom_event', { action: 'dark mode', active: value.toString() });
+      setUserProperties(this.analytics, { darkMode: value.toString() });
     });
   }
 
   onCheckBoxChange(ev: Event, action: string) {
-    this.save({ [action]: (ev as any).detail.checked });
+    const checked = (ev as any).detail.checked;
+    this.save({ [action]: checked });
+    logEvent(this.analytics, 'custom_event', { action, active: checked.toString() });
+    setUserProperties(this.analytics, { [action]: checked.toString() });
   }
 
   save(data: Setting): void {
@@ -100,7 +112,7 @@ export class SettingsPage implements OnInit {
     const createdAt = this.isFirst ? new Date() : null;
     data = omitBy({ ...data, token: this.token, type: 'NYC', updateAt: new Date(), createdAt }, isNil);
     if (!isEmpty(data.token)) {
-      this.db.updateAt(`notifications/${this.uid}`, data).then(async () => {
+      setDoc(doc(this.afs, `notifications/${this.uid}`) as DocumentReference<Setting>, data, { merge: true }).then(async () => {
         t = await this.toast.create({
           color: 'dark',
           duration: 1500,
@@ -110,7 +122,7 @@ export class SettingsPage implements OnInit {
         t = await this.toast.create({
           color: 'dark',
           duration: 1500,
-          message: 'An error has occured.'
+          message: 'An error has occurred.'
         });
       }).finally(() => {
         t.present();
@@ -167,6 +179,7 @@ export class SettingsPage implements OnInit {
     } else {
       this.launchReview.rating().subscribe();
     }
+    logEvent(this.analytics, 'custom_event', { action: 'rate' });
   }
 
   async about() {
@@ -192,6 +205,7 @@ export class SettingsPage implements OnInit {
     });
 
     await alert.present();
+    logEvent(this.analytics, 'custom_event', { action: 'about' });
   }
 
   async donate() {
@@ -230,6 +244,7 @@ export class SettingsPage implements OnInit {
     });
 
     await alert.present();
+    logEvent(this.analytics, 'custom_event', { action: 'donate' });
   }
 
   private async showAlert(maxTime: Dayjs) {

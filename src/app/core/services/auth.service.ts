@@ -1,39 +1,38 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { Observable, of } from 'rxjs';
-import { switchMap, take, map } from 'rxjs/operators';
+import { Auth, signInAnonymously, user, User } from '@angular/fire/auth';
+import { Analytics,  setUserId } from '@angular/fire/analytics';
+import { doc, Firestore, setDoc } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
+import { take, map } from 'rxjs/operators';
+import { traceUntilFirst } from '@angular/fire/performance';
 import { Storage } from '@capacitor/storage';
-import { DbService } from './db.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  user$: Observable<any>;
-  constructor(private afAuth: AngularFireAuth, private db: DbService) {
-    this.user$ = afAuth.authState.pipe(
-      switchMap(user => (user ? db.doc$(`users/${user.uid}`) : of(null)))
-    );
+  user$: Observable<User | null>;
+  constructor(private auth: Auth, private afs: Firestore, private analytics: Analytics) {
+    this.user$ = user(auth);
   }
 
   async anonymousLogin() {
-    const credential = await this.afAuth.signInAnonymously();
-    if (credential.user) {
-      await Storage.set({ key: 'uid', value: credential.user.uid });
-      return await this.updateUserData(credential.user);
+    const { user } = await signInAnonymously(this.auth);
+    if (user) {
+      await Storage.set({ key: 'uid', value: user.uid });
+      setUserId(this.analytics, user.uid);
+      return await setDoc(doc(this.afs, `users/${user.uid}`), { uid: user.uid, created: new Date() }, { merge: true });
     } else {
       await Storage.set({ key: 'uid', value: 'null' });
       // TODO: Hide Setting If No UID
     }
   }
 
-  uid(): Promise<any> {
-    return this.user$.pipe(take(1), map(u => u && u.uid)).toPromise();
+  async getUser(): Promise<User | null> {
+    return await this.user$.pipe(take(1)).toPromise();
   }
 
-  private updateUserData({ uid }: { uid: string }) {
-    const path = `users/${uid}`;
-    const data = { uid, created: new Date() };
-    return this.db.updateAt(path, data);
+  async uid(): Promise<string | null> {
+    return await this.user$.pipe(traceUntilFirst('getUserId'), take(1), map(u => u && u.uid)).toPromise();
   }
 }

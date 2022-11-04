@@ -1,8 +1,12 @@
 import { Component } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { Analytics, setUserProperties } from '@angular/fire/analytics';
 import { Platform, AlertController } from '@ionic/angular';
-import { PushNotificationSchema, PushNotifications, Token } from '@capacitor/push-notifications';
+import { PushNotifications, Token } from '@capacitor/push-notifications';
 import { Network } from '@capacitor/network';
 import { Storage } from '@capacitor/storage';
+import { filter, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -10,10 +14,17 @@ import { Storage } from '@capacitor/storage';
   styleUrls: ['app.component.scss']
 })
 export class AppComponent {
-  constructor(private alert: AlertController, private platform: Platform) {
+  constructor(
+    private alert: AlertController,
+    private analytics: Analytics,
+    private platform: Platform,
+    private router: Router,
+    private title: Title
+  ) {
     this.migrateData();
     this.initializeApp();
     this.setTheme();
+    this.watchTitle();
   }
 
   private async initializeApp() {
@@ -51,13 +62,14 @@ export class AppComponent {
       await alert.present();
     });
   }
-  
+
   private async setTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const { value } = await Storage.get({ key: 'darkMode' });
     const darkMode = (value === 'true');
     if (darkMode) await Storage.set({ key: 'darkMode', value: prefersDark.matches.toString() });
     this.toggleDarkTheme(darkMode);
+    setUserProperties(this.analytics, { darkMode: darkMode.toString() });
     prefersDark.addEventListener('change', (mediaQuery) => this.toggleDarkTheme(mediaQuery.matches));
   }
 
@@ -80,5 +92,22 @@ export class AppComponent {
     const darkMode = localStorage.getItem('darkMode');
     if (localStorage.getItem('intro')) { await Storage.set({ key: 'intro', value: 'true' }); localStorage.removeItem('intro'); }
     if (darkMode) { await Storage.set({ key: 'darkMode', value: darkMode }); localStorage.removeItem('darkMode'); }
+  }
+
+  private watchTitle() {
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd),
+      map(() => {
+        let route: ActivatedRoute = this.router.routerState.root;
+        let routeTitle = '';
+        while (route!.firstChild) {
+          route = route.firstChild;
+        }
+        if (route.snapshot.data['title']) {
+          routeTitle = route!.snapshot.data['title'];
+        }
+        return routeTitle;
+      })).subscribe((title: string) => {
+        if (title) this.title.setTitle(title);
+      });
   }
 }

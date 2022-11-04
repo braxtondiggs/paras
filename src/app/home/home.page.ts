@@ -3,11 +3,10 @@ import { Location } from '@angular/common';
 import { ModalController } from '@ionic/angular';
 import { SwiperOptions } from 'swiper';
 import { SwiperComponent } from 'swiper/angular';
-import { map, take } from 'rxjs/operators';
-import { DbService } from '../core/services';
 import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, CalendarComponent, CalendarComponentPayloadTypes } from 'ion2-calendar';
 import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
 import { Feed } from '../core/interface';
+import { FeedService } from '../core/services';
 import dayjs, { Dayjs } from 'dayjs';
 import { first, orderBy } from 'lodash-es';
 
@@ -31,7 +30,7 @@ export class HomePage implements AfterViewInit {
   @ViewChild('calendar') cal?: CalendarComponent;
   @ViewChild('swiper', { static: false }) swiper?: SwiperComponent;
 
-  constructor(private db: DbService, private modal: ModalController, private location: Location) { }
+  constructor(private feed: FeedService, private modal: ModalController, private location: Location) { }
 
   async onChange(date: CalendarComponentPayloadTypes) {
     const items = this.items.filter((o) => dayjs(o.date.toDate()).isSame(date.toString(), 'day'));
@@ -62,29 +61,21 @@ export class HomePage implements AfterViewInit {
   }
 
   private getData(start: Dayjs, end: Dayjs) {
-    this.db.collection$('feed', (ref) =>
-      ref
-        .where('date', '>=', start.toDate())
-        .where('date', '<', end.toDate())
-        .where('type', '==', 'NYC'))
-      .pipe(
-        map((item: Feed[]) => item.filter(o => !o.active || !o.metered)))
-      .subscribe((items) => {
-        this.items = items;
-        const daysConfig: DayConfig[] = items.map(item => ({
-          cssClass: this.getCalendarClass(item),
-          date: item.date.toDate(),
-          marked: true
-        }));
-        this.calendarOpts.daysConfig = daysConfig;
-        if (this.cal) this.cal.options = this.calendarOpts;
-      });
+    this.feed.get(start, end,).subscribe((items) => {
+      this.items = items;
+      const daysConfig: DayConfig[] = items.map(item => ({
+        cssClass: this.getCalendarClass(item),
+        date: item.date.toDate(),
+        marked: true
+      }));
+      this.calendarOpts.daysConfig = daysConfig;
+      if (this.cal) this.cal.options = this.calendarOpts;
+    });
   }
 
   private getLastDate() {
-    this.db.collection$('feed', (ref) => ref.limit(1).orderBy('date', 'desc')).pipe(take(1)).subscribe((item) => {
-      if (!item.length) return;
-      this.calendarOpts.to = item[0].date.toDate();
+    this.feed.getLast().subscribe(([item]) => {
+      this.calendarOpts.to = item.date.toDate();
     });
   }
 

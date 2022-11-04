@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { concat, filter, first, isEmpty, orderBy, last } from 'lodash-es';
-import { DbService } from '../../services';
 import { Calendar, Feed } from '../../interface';
+import { FeedService } from 'app/core/services';
 import { LoadingController } from '@ionic/angular';
 import { SwiperOptions } from 'swiper';
 import { SwiperComponent } from 'swiper/angular';
@@ -19,7 +19,7 @@ export class HorizontalCalendarComponent implements OnInit {
   loading: any;
   isLoading = true;
   selected?: Feed | Dayjs;
-  feed?: Feed[];
+  feeds?: Feed[];
   active?: Calendar;
   items: Calendar[] = [];
   swiperOpts: SwiperOptions = {
@@ -28,7 +28,7 @@ export class HorizontalCalendarComponent implements OnInit {
     slidesPerView: 7,
     spaceBetween: 4
   };
-  constructor(private db: DbService, private loadingCtl: LoadingController) { }
+  constructor(private feed: FeedService, private loadingCtl: LoadingController) { }
 
   async ngOnInit() {
     dayjs.extend(isSameOrBefore);
@@ -97,19 +97,14 @@ export class HorizontalCalendarComponent implements OnInit {
     const start = first(this.items);
     const end = last(this.items);
     if (!start || !end || !active) return;
-    this.db.collection$('feed', (ref) =>
-      ref
-        .where('date', '>=', start.date)
-        .where('date', '<', end.date)
-        .where('type', '==', 'NYC'))
-      .subscribe((feed) => {
-        this.selected = this.getSelectedItem(active, feed) || dayjs(active.date);
-        this.feed = feed;
-        setTimeout(() => {
-          this.isLoading = false;
-          this.loading.dismiss();
-        }, 250);
-      });
+    this.feed.get(dayjs(start.date), dayjs(end.date)).subscribe((feed) => {
+      this.selected = this.getSelectedItem(active, feed) || dayjs(active.date);
+      this.feeds = feed;
+      setTimeout(() => {
+        this.isLoading = false;
+        this.loading.dismiss();
+      }, 250);
+    });
   }
 
   private getCalenderFormat(date: Dayjs): Calendar {

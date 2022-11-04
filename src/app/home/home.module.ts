@@ -11,6 +11,7 @@ import { CardDetailComponent } from '../core/components/card-detail/card-detail.
 import { HorizontalCalendarComponent } from '../core/components/horizontal-calendar/horizontal-calendar.component';
 import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
 import { TwitterCommentsComponent } from 'app/core/components/twitter-comments/twitter-comments.component';
+import { FeedService } from 'app/core/services';
 
 @NgModule({
   imports: [
@@ -22,11 +23,13 @@ import { TwitterCommentsComponent } from 'app/core/components/twitter-comments/t
     RouterModule.forChild([
       {
         path: '',
-        component: HomePage
+        component: HomePage,
+        data: { title: 'Home' },
       },
       {
         path: 'calendar',
-        component: HomePage
+        component: HomePage,
+        data: { title: 'Calender' },
       }
     ]),
     SwiperModule
@@ -37,6 +40,9 @@ import { TwitterCommentsComponent } from 'app/core/components/twitter-comments/t
     HorizontalCalendarComponent,
     ModalDetailComponent,
     TwitterCommentsComponent
+  ],
+  providers: [
+    FeedService
   ]
 })
 export class HomePageModule { }

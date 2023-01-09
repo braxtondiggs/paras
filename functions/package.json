@@ -19,7 +19,7 @@
     "cors": "^2.8.5",
     "dayjs": "^1.10.7",
     "express": "^4.17.2",
-    "firebase-admin": "^10.0.2",
+    "firebase-admin": "^11.4.1",
     "firebase-functions": "^3.18.0",
     "lodash": "^4.17.20",
     "puppeteer": "^13.3.2",

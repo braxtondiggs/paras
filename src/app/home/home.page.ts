@@ -61,7 +61,7 @@ export class HomePage implements AfterViewInit {
   }
 
   private getData(start: Dayjs, end: Dayjs) {
-    this.feed.get(start, end,).subscribe((items) => {
+    this.feed.get(start, end).subscribe((items) => {
       this.items = items;
       const daysConfig: DayConfig[] = items.map(item => ({
         cssClass: this.getCalendarClass(item),

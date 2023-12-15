@@ -1,89 +1,90 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
-import { Location } from '@angular/common';
-import { ModalController } from '@ionic/angular';
-import { SwiperOptions } from 'swiper';
-import { SwiperComponent } from 'swiper/angular';
-import { CalendarComponentOptions, DayConfig, CalendarComponentMonthChange, CalendarComponent, CalendarComponentPayloadTypes } from 'ion2-calendar';
+import { Component, ElementRef, ViewChild, AfterViewInit, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { ModalDetailComponent } from '../core/components/modal-detail/modal-detail.component';
 import { Feed } from '../core/interface';
 import { FeedService } from '../core/services';
 import dayjs, { Dayjs } from 'dayjs';
-import { first, orderBy } from 'lodash-es';
+import { addIcons } from 'ionicons';
+import { calendarOutline, settingsOutline } from 'ionicons/icons';
+import { IonRouterLink, IonHeader, IonToolbar, IonTitle, IonButton, IonButtons,  IonContent, IonIcon, ModalController, IonDatetime, PickerColumnOption  } from '@ionic/angular/standalone';
+import { Router, RouterLink } from '@angular/router';
+import { HorizontalCalendarComponent } from 'app/core/components/horizontal-calendar/horizontal-calendar.component';
 
 @Component({
+  imports: [
+    ModalDetailComponent,
+    HorizontalCalendarComponent,
+    IonButton,
+    IonButtons,
+    IonContent,
+    IonDatetime,
+    IonHeader,
+    IonIcon,
+    IonRouterLink,
+    IonRouterLink,
+    IonTitle,
+    IonToolbar,
+    RouterLink
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   selector: 'app-home',
-  templateUrl: './home.page.html',
-  styleUrls: ['home.page.scss']
+  standalone: true,
+  styleUrls: ['home.page.scss'],
+  templateUrl: './home.page.html'
 })
+
 export class HomePage implements AfterViewInit {
-  index = true;
-  date: string = dayjs().format();
-  items: Feed[] = [];
-  swiperOpts: SwiperOptions = {
-    allowTouchMove: false,
-    initialSlide: this.location.path().includes('calendar') ? 1 : 0
-  };
-  calendarOpts: CalendarComponentOptions = {
-    daysConfig: [],
-    from: new Date(2019, 11, 1)
-  };
-  @ViewChild('calendar') cal?: CalendarComponent;
-  @ViewChild('swiper', { static: false }) swiper?: SwiperComponent;
+  public minDate: string = dayjs().startOf('year').toISOString();
+  public maxDate: string = dayjs().endOf('year').toISOString();
+  public items: Feed[] = [];
+  public highlightedDates: any[] = [];
+  public activeSlide = 0;
+  private router = inject(Router);
+  
+  @ViewChild('swiper', { static: false }) swiper?: ElementRef | undefined;
+  @ViewChild('calendar', { read: ElementRef, static: false }) calendar?: ElementRef;
+  constructor(private feed: FeedService, private modal: ModalController) {
+    this.activeSlide = this.router.url.includes('calendar') ? 1 : 0;
+    addIcons({ calendarOutline, settingsOutline });
+  }
 
-  constructor(private feed: FeedService, private modal: ModalController, private location: Location) { }
-
-  async onChange(date: CalendarComponentPayloadTypes) {
-    const items = this.items.filter((o) => dayjs(o.date.toDate()).isSame(date.toString(), 'day'));
-    const item = first(orderBy(items, (o => o.created.seconds), ['desc'])) || dayjs(date.toString());
-    const modal = await this.modal.create({
+  async onChange({ detail }: CustomEvent<PickerColumnOption>) {
+    const { value } = detail;
+    const date = dayjs(value);
+    const item = this.items.find((o) => dayjs(o.date.toDate()).isSame(date, 'day')) || dayjs(date.toString());
+    const modalDetail = await this.modal.create({
       component: ModalDetailComponent,
       cssClass: 'fullscreen',
       componentProps: {
         item
       }
     });
-    return await modal.present();
+    return await modalDetail.present();
   }
 
   ngAfterViewInit(): void {
     this.getLastDate();
-    this.getData(dayjs().startOf('month'), dayjs().endOf('month'));
-  }
-
-  onMonthChange($event: CalendarComponentMonthChange): void {
-    this.getData(dayjs($event.newMonth.dateObj), dayjs($event.newMonth.dateObj).endOf('month'));
+    this.getData(dayjs(this.minDate), dayjs(this.maxDate));
   }
 
   switchCalenderView() {
-    this.index = !this.index;
-    this.swiper?.swiperRef.slideTo(this.index ? 0 : 1);
-    this.location.replaceState(`/home${this.index ? '' : '/calendar'}`);
+    this.activeSlide = this.activeSlide ? 0 : 1;
+    this.swiper?.nativeElement.swiper?.slideTo(this.activeSlide);
+    this.router.navigate([`/home${this.activeSlide ? '/calendar' : ''}`], { replaceUrl: true });
   }
 
   private getData(start: Dayjs, end: Dayjs) {
     this.feed.get(start, end).subscribe((items) => {
       this.items = items;
-      const daysConfig: DayConfig[] = items.map(item => ({
-        cssClass: this.getCalendarClass(item),
-        date: item.date.toDate(),
-        marked: true
+      this.highlightedDates = items.map((o) => ({
+        date: dayjs(o.date.toDate()).format('YYYY-MM-DD'),
+        backgroundColor: '#f38181',
       }));
-      this.calendarOpts.daysConfig = daysConfig;
-      if (this.cal) this.cal.options = this.calendarOpts;
     });
   }
 
   private getLastDate() {
-    this.feed.getLast().subscribe(([item]) => {
-      this.calendarOpts.to = item.date.toDate();
+    this.feed.getLast().subscribe((item) => {
+      this.maxDate = dayjs(item.date.toDate()).endOf('month').subtract(1, 'day').toISOString();  
     });
-  }
-
-  private getCalendarClass(item: Feed): string | undefined {
-    if (item.active) {
-      return 'active';
-    } else if (item.metered) {
-      return 'metered';
-    }
   }
 }

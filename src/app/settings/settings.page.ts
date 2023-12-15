@@ -1,26 +1,39 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { Analytics,logEvent, setUserProperties } from '@angular/fire/analytics';
-import { doc, docData, DocumentReference, Firestore, setDoc, } from '@angular/fire/firestore';
-import { traceUntilFirst } from '@angular/fire/performance';
-import { AuthService } from '../core/services';
-import { Setting } from '../core/interface';
-import { omitBy, isNil, isEmpty, range } from 'lodash-es';
-import { AlertController, PickerController, LoadingController, ToastController, Platform } from '@ionic/angular';
-import { Storage } from '@capacitor/storage';
-import { EmailComposer } from 'capacitor-email-composer';
-import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
-import { InAppPurchase2, IAPProduct } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
-import dayjs, { Dayjs } from 'dayjs';
-import objectSupport from 'dayjs/plugin/objectSupport';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
+const IonComponents = [
+  IonBackButton,
+  IonButtons,
+  IonCheckbox,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonItemGroup,
+  IonLabel,
+  IonList,
+  IonListHeader,
+  IonNote,
+  IonSelect,
+  IonSelectOption,
+  IonTitle,
+  IonToggle,
+  IonToolbar
+];
 
 @Component({
+  standalone: true,
+  providers: [LaunchReview, InAppPurchase2],
+  imports: [
+    NgIf,
+    ReactiveFormsModule,
+    ...IonComponents,
+  ],
   selector: 'app-settings',
   templateUrl: './settings.page.html',
-  styleUrls: ['./settings.page.scss'],
+  styleUrls: ['./settings.page.scss']
 })
 export class SettingsPage implements OnInit {
+  private analytics: Analytics = inject(Analytics);
+  private afs: Firestore = inject(Firestore);
+  private fb: FormBuilder = inject(FormBuilder);
   uid?: string | null;
   settings: Setting;
   settingsForm: FormGroup;
@@ -29,12 +42,10 @@ export class SettingsPage implements OnInit {
   isFirst = false;
   token?: string | null;
   isiOS?: boolean;
+
   constructor(
-    fb: FormBuilder,
-    private alert: AlertController,
-    private analytics: Analytics,
     private auth: AuthService,
-    private afs: Firestore,
+    private alert: AlertController,
     private launchReview: LaunchReview,
     private loading: LoadingController,
     private picker: PickerController,
@@ -52,8 +63,9 @@ export class SettingsPage implements OnInit {
       weekend: false,
       darkMode: false
     };
-    this.settingsForm = fb.group(this.settings);
+    this.settingsForm = this.fb.group(this.settings);
     this.isiOS = this.platform.is('ios');
+    addIcons({ heart, thumbsUp, informationCircle, moon });
   }
 
   async ngOnInit() {
@@ -66,7 +78,7 @@ export class SettingsPage implements OnInit {
       docData<Setting>(
         doc(this.afs, `notifications/${this.uid}`) as DocumentReference<Setting>
       ).pipe(traceUntilFirst('getUserNotifications')).subscribe(async (settings: Setting = {}) => {
-        this.isFirst = isEmpty(settings.updateAt);
+        this.isFirst = settings.updateAt === undefined;
         if (settings.todayCustom) settings.todayCustom = dayjs().set(this.getTime(settings.todayCustom)).format(this.format);
         if (settings.nextDayCustom) settings.nextDayCustom = dayjs().set(this.getTime(settings.nextDayCustom)).format(this.format);
         this.settings = { ...this.settings, ...settings };
@@ -110,8 +122,8 @@ export class SettingsPage implements OnInit {
   save(data: Setting): void {
     let t: HTMLIonToastElement;
     const createdAt = this.isFirst ? new Date() : null;
-    data = omitBy({ ...data, token: this.token, type: 'NYC', updateAt: new Date(), createdAt }, isNil);
-    if (!isEmpty(data.token)) {
+    data = this.omitByNil({ ...data, token: this.token, type: 'NYC', updateAt: new Date(), createdAt });
+    if (data.token !== undefined) {
       setDoc(doc(this.afs, `notifications/${this.uid}`) as DocumentReference<Setting>, data, { merge: true }).then(async () => {
         t = await this.toast.create({
           color: 'dark',
@@ -136,6 +148,8 @@ export class SettingsPage implements OnInit {
     const [hour, minute] = time.split(':');
     return { hour: +hour, minute: +minute };
   }
+
+  private omitByNil = (data: any) => Object.fromEntries(Object.entries(data).filter(([key, value]) => value !== null && value !== undefined));
 
   getNotificationMessage(type: string, action: string): string {
     const time = type === 'today' ? this.settings.todayCustom : this.settings.nextDayCustom;
@@ -197,7 +211,7 @@ export class SettingsPage implements OnInit {
             if (hasAccount) {
               EmailComposer.open({ to: ['hello@braxtondiggs.com'], subject: 'ASP for NYC', isHtml: false, body: '' });
             } else {
-              window.open('mailto:someone@example.com?subject=ASP%20for%20NYC', '_system');
+              window.open('mailto:hello@braxtondiggs.com?subject=ASP%20for%20NYC', '_system');
             }
           }
         }
@@ -211,7 +225,7 @@ export class SettingsPage implements OnInit {
   async donate() {
     const alert = await this.alert.create({
       header: 'Support Development',
-      message: 'Hello, there! Hundreds of hours have been put into developing and perfecting ASP, so if you use this app quite often, why not considering supporting development.<br /><br />Your support ensures that we can keep up development, keeping the app alive.',
+      message: 'Hello, there! Hundreds of hours have been put into developing and perfecting ASP NYC, so if you use this app quite often, why not considering supporting development.<br /><br />Your support ensures that we can keep up development, keeping the app alive.',
       buttons: [
         {
           text: 'No, Thanks',
@@ -284,8 +298,8 @@ export class SettingsPage implements OnInit {
       columns: [
         {
           name: 'hours',
-          selectedIndex: range(1, 13).findIndex(o => o == hour),
-          options: range(1, 13).map(o => ({ text: o.toString() }))
+          selectedIndex: [...Array(13).keys()].map(k => k + 1).findIndex(o => o == hour),
+          options: [...Array(13).keys()].map(k => k + 1).map(o => ({ text: o.toString() }))
         },
         {
           name: 'minutes',
@@ -300,11 +314,50 @@ export class SettingsPage implements OnInit {
       ]
     });
     await picker.present();
-
-    picker.onDidDismiss().then((event) => {
-      if (event.role === 'backdrop') {
-
-      }
-    });
   }
 }
+
+import { Component, inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { NgIf } from '@angular/common';
+
+import { addIcons } from 'ionicons';
+import { heart, thumbsUp, informationCircle, moon } from 'ionicons/icons';
+import {
+  AlertController,
+  IonBackButton,
+  IonButtons,
+  IonCheckbox,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonItemGroup,
+  IonLabel,
+  IonList,
+  IonListHeader,
+  IonNote,
+  IonSelect,
+  IonSelectOption,
+  IonTitle,
+  IonToggle,
+  IonToolbar,
+  LoadingController,
+  PickerController,
+  Platform,
+  ToastController
+} from '@ionic/angular/standalone';
+
+import { Analytics, logEvent, setUserProperties } from '@angular/fire/analytics';
+import { doc, docData, DocumentReference, Firestore, setDoc, } from '@angular/fire/firestore';
+import { traceUntilFirst } from '@angular/fire/performance';
+
+import { AuthService } from '../core/services';
+import { Setting } from '../core/interface';
+import { Storage } from '@capacitor/storage';
+import { EmailComposer } from 'capacitor-email-composer';
+import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
+import { InAppPurchase2, IAPProduct } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
+import dayjs, { Dayjs } from 'dayjs';
+import objectSupport from 'dayjs/plugin/objectSupport';
+import customParseFormat from 'dayjs/plugin/customParseFormat';

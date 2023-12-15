@@ -7,9 +7,11 @@ $text-color: #393e46;
 $main-color: darken($card-border, 30%);
 
 .horizontal-container {
+  margin-top: 16px;
   position: relative;
 
   .swiper-container {
+    display: flex;
     padding: 0 4px;
     position: relative;
 
@@ -38,15 +40,16 @@ $main-color: darken($card-border, 30%);
 
   .month {
     color: $text-color;
-    font-size: 24px;
-    margin-bottom: 10px;
+    font-size: 22px;
     font-weight: 500;
+    letter-spacing: 0.8px;
     line-height: 1.2;
+    margin-bottom: 16px;
     text-align: center;
   }
 }
 
-:host ::ng-deep .swiper-slide {
+.swiper-slide {
   background-color: $card-background;
   border-radius: 8px;
   border: 1px solid $card-border;

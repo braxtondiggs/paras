@@ -92,3 +92,5 @@ $RECYCLE.BIN/
 /release.keystore
 /ASP.apk
 /.angular/cache
+
+.nx/cache

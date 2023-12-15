@@ -1,34 +1,45 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { concat, filter, first, isEmpty, orderBy, last } from 'lodash-es';
+import { Component, OnInit, ViewChild, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, ChangeDetectorRef } from '@angular/core';
 import { Calendar, Feed } from '../../interface';
 import { FeedService } from 'app/core/services';
-import { LoadingController } from '@ionic/angular';
-import { SwiperOptions } from 'swiper';
-import { SwiperComponent } from 'swiper/angular';
+import { LoadingController, IonRippleEffect, IonButton, IonIcon } from '@ionic/angular/standalone';
 import dayjs, { Dayjs } from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
+import { NgFor, NgIf, NgClass } from '@angular/common';
+
+import { addIcons } from 'ionicons';
+import { arrowBack, arrowForward } from 'ionicons/icons';
+import { register } from 'swiper/element/bundle';
+import { CardDetailComponent } from '../card-detail/card-detail.component';
 
 @Component({
+  standalone: true,
+  imports: [
+    CardDetailComponent,
+    IonRippleEffect,
+    IonButton,
+    IonIcon,
+    NgFor,
+    NgIf,
+    NgClass
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   selector: 'horizontal-calendar',
   templateUrl: './horizontal-calendar.component.html',
   styleUrls: ['./horizontal-calendar.component.scss'],
 })
 export class HorizontalCalendarComponent implements OnInit {
-  @ViewChild('swiper', { static: false }) swiper?: SwiperComponent;
+  @ViewChild('swiper', { static: false }) public swiper?: ElementRef | undefined;
   loading: any;
   isLoading = true;
   selected?: Feed | Dayjs;
   feeds?: Feed[];
   active?: Calendar;
   items: Calendar[] = [];
-  swiperOpts: SwiperOptions = {
-    centeredSlides: true,
-    initialSlide: 6,
-    slidesPerView: 7,
-    spaceBetween: 4
-  };
-  constructor(private feed: FeedService, private loadingCtl: LoadingController) { }
+  private cd = inject(ChangeDetectorRef);
+  constructor(private feed: FeedService, private loadingCtl: LoadingController) {
+    addIcons({ arrowBack, arrowForward });
+  }
 
   async ngOnInit() {
     dayjs.extend(isSameOrBefore);
@@ -36,13 +47,14 @@ export class HorizontalCalendarComponent implements OnInit {
     this.loading = await this.loadingCtl.create();
     this.loading.present();
     this.items = this.getDatesBetween();
-    this.active = this.items[this.swiperOpts.initialSlide ?? 0];
+    this.active = this.items[6];
     this.getData();
+    register();
   }
 
   async onSlideChange() {
-    if (!this.swiper) return;
-    const index = this.swiper.swiperRef.activeIndex;
+    const index = this.swiper?.nativeElement?.swiper?.activeIndex;
+    if (!index) return;
     if (this.items.length - 3 <= index) {
       await this.slideEnd();
     } else if (index <= 2) {
@@ -52,7 +64,19 @@ export class HorizontalCalendarComponent implements OnInit {
     this.getData();
   }
 
-  hasNotice(calendar: Calendar, feed: Feed[]): boolean {
+  public slideTo(index: number, speed = 250) {
+    this.swiper?.nativeElement.swiper.slideTo(index, speed);
+  }
+
+  public slideNext() {
+    this.swiper?.nativeElement.swiper.slideNext();
+  }
+  
+  public slidePrev() {
+    this.swiper?.nativeElement.swiper.slidePrev();
+  }
+
+  public hasNotice(calendar: Calendar, feed: Feed[] | undefined): boolean {
     if (feed) {
       const item = this.getSelectedItem(calendar, feed);
       return item ? !item.active : false;
@@ -61,24 +85,28 @@ export class HorizontalCalendarComponent implements OnInit {
   }
 
   private getSelectedItem(calendar: Calendar, feed: Feed[]): Feed | undefined {
-    const filteredFeed = filter(feed, (o => dayjs(o.date.toDate()).isSame(calendar.date, 'day')));
-    if (isEmpty(filteredFeed)) return;
-    return first(orderBy(filteredFeed, (o => o.created.seconds), ['desc']));
+    const filteredFeed = feed.filter((o => dayjs(o.date.toDate()).isSame(calendar.date, 'day')));
+    if (filteredFeed.length === 0) return;
+    return filteredFeed[0];
   }
 
   private async slideEnd() {
-    const date = last(this.items);
+    const date = this.items[this.items.length - 1];
     if (!date) return;
     const end = dayjs(date.text).add(10, 'day');
-    this.items = concat(this.items, this.getDatesBetween(dayjs(date.text).add(1, 'day'), end));
+    this.items = this.items.concat(this.getDatesBetween(dayjs(date.text).add(1, 'day'), end));
+    this.cd.detectChanges();
+    this.swiper?.nativeElement.swiper.update();
   }
 
   private async slideStart() {
-    const date = first(this.items);
+    const date = this.items[0];
     if (!date) return;
-    this.swiper?.swiperRef.slideTo(7, 0);
     const start = dayjs(date.text).subtract(5, 'days');
-    this.items = concat(this.getDatesBetween(start, dayjs(date.text).subtract(1, 'day')));
+    this.items = this.getDatesBetween(start, dayjs(date.text).subtract(1, 'day')).concat(this.items);
+    this.slideTo(7, 0);
+    this.cd.detectChanges();
+    this.swiper?.nativeElement.swiper.update();
   }
 
   private getDatesBetween(startDate?: Dayjs, endDate?: Dayjs): Calendar[] {
@@ -94,8 +122,8 @@ export class HorizontalCalendarComponent implements OnInit {
 
   private getData() {
     const active = this.active;
-    const start = first(this.items);
-    const end = last(this.items);
+    const start = this.items[0];
+    const end = this.items[this.items.length - 1];
     if (!start || !end || !active) return;
     this.feed.get(dayjs(start.date), dayjs(end.date)).subscribe((feed) => {
       this.selected = this.getSelectedItem(active, feed) || dayjs(active.date);

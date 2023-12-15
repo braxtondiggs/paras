@@ -5,6 +5,7 @@ import { traceUntilFirst } from '@angular/fire/performance';
 import { collection, collectionData, CollectionReference, Firestore, limit, orderBy, query, where } from '@angular/fire/firestore';
 import { Dayjs } from 'dayjs';
 import { Feed } from '../interface';
+import { DocumentData } from 'firebase/firestore';
 
 @Injectable({
 	providedIn: 'root'
@@ -14,7 +15,7 @@ export class FeedService {
 
 	get(start: Dayjs, end: Dayjs): Observable<Feed[]> {
 		return collectionData<Feed>(
-			query<Feed>(
+			query<Feed, DocumentData>(
 				collection(this.afs, 'feed') as CollectionReference<Feed>,
 				where('date', '>=', start.toDate()),
 				where('date', '<', end.toDate()),
@@ -27,14 +28,18 @@ export class FeedService {
 		);
 	}
 
-	getLast(): Observable<Feed[]> { // Firestore.instance.collection("data").snapshots().last
+	getLast(): Observable<Feed> {
 		return collectionData<Feed>(
-			query<Feed>(
+			query<Feed, DocumentData>(
 				collection(this.afs, 'feed') as CollectionReference<Feed>,
 				limit(1),
 				orderBy('date', 'desc')
 			),
 			{ idField: 'id' }
-		).pipe(traceUntilFirst('getLastFeedItem'), take(1));
+		).pipe(
+			take(1),
+			map((items: Feed[]) => items[0]),
+			traceUntilFirst('getLastFeedItem')
+		);
 	}
 }

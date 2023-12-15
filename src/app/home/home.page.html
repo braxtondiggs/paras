@@ -5,19 +5,28 @@
       <ion-button (click)="switchCalenderView()">
         <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
       </ion-button>
-      <ion-button [routerLink]="['/settings']">
+      <ion-button routerLink="/settings">
         <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
-  <swiper #swiper [config]="swiperOpts">
-    <ng-template swiperSlide>
+  <swiper-container #swiper [allowTouchMove]="false" [initialSlide]="activeSlide">
+    <swiper-slide>
       <horizontal-calendar></horizontal-calendar>
-    </ng-template>
-    <ng-template swiperSlide>
-      <ion-calendar #calendar [(ngModel)]="date" (change)="onChange($event)" (monthChange)="onMonthChange($event)" type="string" [format]="'YYYY-MM-DD'" [options]="calendarOpts"></ion-calendar>
-    </ng-template>
-  </swiper>
+    </swiper-slide>
+    <swiper-slide>
+      <ion-datetime
+        #calendar
+        [min]="minDate"
+        [max]="maxDate"
+        [highlightedDates]="highlightedDates"
+        (ionChange)="onChange($event)"
+        size="cover"
+        mode="md"
+        presentation="date">
+      </ion-datetime>
+    </swiper-slide>
+  </swiper-container>
 </ion-content>

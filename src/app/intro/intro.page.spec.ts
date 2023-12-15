@@ -1,13 +1,13 @@
 import { createComponentFactory, Spectator } from '@ngneat/spectator/jest';
 import { RouterTestingModule } from '@angular/router/testing';
-import { IonicModule } from '@ionic/angular';
+import { IonContent, IonText, IonButton } from '@ionic/angular/standalone';
 
 import { IntroPage } from './intro.page';
 
 describe('IntroPage', () => {
   const createComponent = createComponentFactory({
     component: IntroPage,
-    imports: [IonicModule.forRoot(), RouterTestingModule]
+    imports: [IonContent, IonText, IonButton, RouterTestingModule]
   });
 
   let spectator: Spectator<IntroPage>;

@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Auth, signInAnonymously, user, User } from '@angular/fire/auth';
 import { Analytics,  setUserId } from '@angular/fire/analytics';
 import { doc, Firestore, setDoc } from '@angular/fire/firestore';
-import { EMPTY, Observable } from 'rxjs';
+import { EMPTY, lastValueFrom, Observable } from 'rxjs';
 import { take, map } from 'rxjs/operators';
 import { traceUntilFirst } from '@angular/fire/performance';
 import { Storage } from '@capacitor/storage';
@@ -11,9 +11,12 @@ import { Storage } from '@capacitor/storage';
   providedIn: 'root'
 })
 export class AuthService {
+  private auth: Auth = inject(Auth);
+  private analytics: Analytics = inject(Analytics);
+  private afs: Firestore = inject(Firestore);
   public readonly user$: Observable<User | null> = EMPTY;
-  constructor(private auth: Auth, private afs: Firestore, private analytics: Analytics) {
-    this.user$ = user(auth).pipe(traceUntilFirst('auth'));
+  constructor() {
+    this.user$ = user(this.auth).pipe(traceUntilFirst('auth'));
   }
 
   async anonymousLogin() {
@@ -29,10 +32,10 @@ export class AuthService {
   }
 
   async getUser(): Promise<User | null> {
-    return await this.user$.pipe(take(1)).toPromise();
+    return await lastValueFrom(this.user$.pipe(traceUntilFirst('getUser')));
   }
 
   async uid(): Promise<string | null> {
-    return await this.user$.pipe(traceUntilFirst('getUserId'), take(1), map(u => u && u.uid)).toPromise();
+    return await lastValueFrom(this.user$.pipe(traceUntilFirst('getUserId'), take(1), map(u => u && u.uid)));
   }
 }

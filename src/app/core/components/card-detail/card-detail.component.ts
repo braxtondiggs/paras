@@ -1,19 +1,40 @@
 import { Component, Input, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
-import { Feed } from '../../interface';
+import { NgIf } from '@angular/common';
+
+import { IonCard, IonCardContent, IonCardHeader, IonIcon, IonItem, IonList, IonText } from '@ionic/angular/standalone';
+
 import dayjs, { Dayjs } from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 
+import { addIcons } from 'ionicons';
+import { closeCircleOutline, checkmarkCircleOutline } from 'ionicons/icons';
+
+import { Feed, Item } from '../../interface';
+
 @Component({
+  standalone: true,
+  imports: [
+    IonCard,
+    IonCardContent,
+    IonCardHeader,
+    IonIcon,
+    IonItem,
+    IonList,
+    IonText,
+    NgIf
+  ],
   selector: 'app-card-detail',
   templateUrl: './card-detail.component.html',
   styleUrls: ['./card-detail.component.scss'],
 })
 export class CardDetailComponent implements OnChanges {
   detail?: Item;
-  date?: Date;
   @Input() item?: Feed | Dayjs;
-  @Input() showComments: boolean = false;
+
+  constructor() {
+    addIcons({ closeCircleOutline, checkmarkCircleOutline });
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     dayjs.extend(relativeTime);
@@ -22,7 +43,6 @@ export class CardDetailComponent implements OnChanges {
     if (currentItem.currentValue) {
       const data: Feed | Dayjs = changes['item'].currentValue;
       if (!dayjs.isDayjs(data)) {
-        this.date = data.date.toDate();
         this.detail = {
           ...data,
           created: dayjs(data.created.toDate()).fromNow(),
@@ -31,7 +51,6 @@ export class CardDetailComponent implements OnChanges {
           dayjs(data.date.toDate()).isSame(dayjs().add(1, 'day'), 'day')
         };
       } else {
-        this.date = data.toDate();
         this.detail = {
           active: true,
           created: data.fromNow(),
@@ -42,13 +61,4 @@ export class CardDetailComponent implements OnChanges {
       }
     }
   }
-}
-
-interface Item {
-  active: Boolean;
-  created: String;
-  date: String;
-  lastUpdated: Boolean;
-  metered: Boolean;
-  reason?: String;
 }

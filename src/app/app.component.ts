@@ -1,25 +1,29 @@
-import { Component } from '@angular/core';
+import { Component, EnvironmentInjector, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Analytics, setUserProperties } from '@angular/fire/analytics';
-import { Performance } from '@angular/fire/performance';
-import { Platform, AlertController } from '@ionic/angular';
+// import { Performance } from '@angular/fire/performance';
+import { Platform, AlertController, IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { PushNotifications, Token } from '@capacitor/push-notifications';
 import { Network } from '@capacitor/network';
 import { Storage } from '@capacitor/storage';
 import { filter, map } from 'rxjs/operators';
 
 @Component({
+  imports: [IonApp, IonRouterOutlet],
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['app.component.scss']
+  standalone: true,
+  styleUrls: ['app.component.scss'],
+  templateUrl: './app.component.html'
 })
 export class AppComponent {
+  private analytics: Analytics = inject(Analytics);
+  // private _performance: Performance = inject(Performance);
+
   constructor(
-    _performance: Performance, // Note: this is unused, but it's here to ensure the performance module is loaded
     private alert: AlertController,
-    private analytics: Analytics,
     private platform: Platform,
+    public environmentInjector: EnvironmentInjector,
     private router: Router,
     private title: Title
   ) {

@@ -3,7 +3,9 @@
   "compilerOptions": {
     "outDir": "./out-tsc/app",
     "types": [],
-    "skipLibCheck": true // TODO: Remove this ion-calender
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "useDefineForClassFields": false
   },
   "files": [
     "src/main.ts",

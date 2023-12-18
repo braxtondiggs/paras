@@ -5,7 +5,7 @@ import { doc, Firestore, setDoc } from '@angular/fire/firestore';
 import { EMPTY, lastValueFrom, Observable } from 'rxjs';
 import { take, map } from 'rxjs/operators';
 import { traceUntilFirst } from '@angular/fire/performance';
-import { Storage } from '@capacitor/storage';
+import { Preferences } from '@capacitor/preferences';
 
 @Injectable({
   providedIn: 'root'
@@ -22,11 +22,11 @@ export class AuthService {
   async anonymousLogin() {
     const { user } = await signInAnonymously(this.auth);
     if (user) {
-      await Storage.set({ key: 'uid', value: user.uid });
+      await Preferences.set({ key: 'uid', value: user.uid });
       setUserId(this.analytics, user.uid);
       return await setDoc(doc(this.afs, `users/${user.uid}`), { uid: user.uid, created: new Date() }, { merge: true });
     } else {
-      await Storage.set({ key: 'uid', value: 'null' });
+      await Preferences.set({ key: 'uid', value: 'null' });
       // TODO: Hide Setting If No UID
     }
   }

@@ -6,7 +6,7 @@ import { Analytics, setUserProperties } from '@angular/fire/analytics';
 import { Platform, AlertController, IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { PushNotifications, Token } from '@capacitor/push-notifications';
 import { Network } from '@capacitor/network';
-import { Storage } from '@capacitor/storage';
+import { Preferences } from '@capacitor/preferences';
 import { filter, map } from 'rxjs/operators';
 
 @Component({
@@ -46,7 +46,7 @@ export class AppComponent {
     });
 
     PushNotifications.addListener('registration', async (token: Token) => {
-      await Storage.set({ key: 'token', value: token.value });
+      await Preferences.set({ key: 'token', value: token.value });
     });
 
     PushNotifications.addListener('registrationError', async (error: any) => {
@@ -58,8 +58,8 @@ export class AppComponent {
             text: 'Dismiss',
             role: 'cancel',
             handler: async () => {
-              await Storage.set({ key: 'tokenFailure', value: 'true' });
-              await Storage.set({ key: 'tokenFailureError', value: error.toString() });
+              await Preferences.set({ key: 'tokenFailure', value: 'true' });
+              await Preferences.set({ key: 'tokenFailureError', value: error.toString() });
             }
           }
         ]
@@ -71,9 +71,9 @@ export class AppComponent {
 
   private async setTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    const { value } = await Storage.get({ key: 'darkMode' });
+    const { value } = await Preferences.get({ key: 'darkMode' });
     const darkMode = (value === 'true');
-    if (darkMode) await Storage.set({ key: 'darkMode', value: prefersDark.matches.toString() });
+    if (darkMode) await Preferences.set({ key: 'darkMode', value: prefersDark.matches.toString() });
     this.toggleDarkTheme(darkMode);
     setUserProperties(this.analytics, { darkMode: darkMode.toString() });
     prefersDark.addEventListener('change', (mediaQuery) => this.toggleDarkTheme(mediaQuery.matches));
@@ -81,7 +81,7 @@ export class AppComponent {
 
   private async toggleDarkTheme(shouldAdd: boolean) {
     document.body.classList.toggle('dark', shouldAdd);
-    await Storage.set({ key: 'darkMode', value: shouldAdd.toString() });
+    await Preferences.set({ key: 'darkMode', value: shouldAdd.toString() });
   }
 
   private async showNetworkAlert() {
@@ -96,8 +96,8 @@ export class AppComponent {
 
   private async migrateData() {
     const darkMode = localStorage.getItem('darkMode');
-    if (localStorage.getItem('intro')) { await Storage.set({ key: 'intro', value: 'true' }); localStorage.removeItem('intro'); }
-    if (darkMode) { await Storage.set({ key: 'darkMode', value: darkMode }); localStorage.removeItem('darkMode'); }
+    if (localStorage.getItem('intro')) { await Preferences.set({ key: 'intro', value: 'true' }); localStorage.removeItem('intro'); }
+    if (darkMode) { await Preferences.set({ key: 'darkMode', value: darkMode }); localStorage.removeItem('darkMode'); }
   }
 
   private watchTitle() {

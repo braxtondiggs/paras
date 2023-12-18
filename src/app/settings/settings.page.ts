@@ -73,7 +73,7 @@ export class SettingsPage implements OnInit {
     loading.present();
     this.uid = await this.auth.uid();
     if (this.uid) {
-      const { value } = await Storage.get({ key: 'token' });
+      const { value } = await Preferences.get({ key: 'token' });
       this.token = value;
       docData<Setting>(
         doc(this.afs, `notifications/${this.uid}`) as DocumentReference<Setting>
@@ -82,7 +82,7 @@ export class SettingsPage implements OnInit {
         if (settings.todayCustom) settings.todayCustom = dayjs().set(this.getTime(settings.todayCustom)).format(this.format);
         if (settings.nextDayCustom) settings.nextDayCustom = dayjs().set(this.getTime(settings.nextDayCustom)).format(this.format);
         this.settings = { ...this.settings, ...settings };
-        const { value } = await Storage.get({ key: 'darkMode' });
+        const { value } = await Preferences.get({ key: 'darkMode' });
         if (value === 'true') this.settings.darkMode = true;
         this.settingsForm.patchValue(this.settings, { emitEvent: false, onlySelf: true });
         setTimeout(() => {
@@ -105,7 +105,7 @@ export class SettingsPage implements OnInit {
     });
 
     this.settingsForm.controls['darkMode'].valueChanges.subscribe(async (value) => {
-      await Storage.set({ key: 'darkMode', value: value.toString() });
+      await Preferences.set({ key: 'darkMode', value: value.toString() });
       document.body.classList.toggle('dark', value);
       logEvent(this.analytics, 'custom_event', { action: 'dark mode', active: value.toString() });
       setUserProperties(this.analytics, { darkMode: value.toString() });
@@ -354,7 +354,7 @@ import { traceUntilFirst } from '@angular/fire/performance';
 
 import { AuthService } from '../core/services';
 import { Setting } from '../core/interface';
-import { Storage } from '@capacitor/storage';
+import { Preferences } from '@capacitor/preferences';
 import { EmailComposer } from 'capacitor-email-composer';
 import { LaunchReview } from '@awesome-cordova-plugins/launch-review/ngx';
 import { InAppPurchase2, IAPProduct } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';

@@ -1,10 +1,13 @@
 {
   "appId": "com.cymbit.paras",
   "appName": "ASP NYC",
-  "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",
   "PushNotifications": {
-    "presentationOptions": ["badge", "sound", "alert"]
+    "presentationOptions": [
+      "badge",
+      "sound",
+      "alert"
+    ]
   }
 }

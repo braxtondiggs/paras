@@ -1,17 +1,29 @@
-import * as functions from 'firebase-functions';
-import * as cors from 'cors';
-import * as express from 'express';
 
-import { NYFeed, TwitterComments /*NJfeed*/ } from './twitter';
+/*import { onRequest } from "firebase-functions/v2/https";
+
+import Fastify from 'fastify'
+
+import { NYFeed, TwitterComments } from '../old/twitter';
 import { FCM } from './fcm';
-import { NYCalender } from './calendar';
+import { NYCalender } from '../old/calendar';*/
+//import { getApp } from "firebase/app";
+// import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
-const app = express();
-app.use(cors({ origin: true }));
+// onRequest(fastify);
+//
 
-app.get('/nyc/feed', NYFeed);
-app.get('/nyc/calender', NYCalender);
-app.get('/nyc/comments/:id', TwitterComments);
+// app.get('/', (request, reply) => reply.send({ hello: 'world' }));
 
-exports.endpoints = functions.runWith({ memory: '1GB' }).https.onRequest(app);
-export const FCMNotification = functions.pubsub.schedule('every 15 minutes').timeZone('America/New_York').onRun(() => FCM());
+/*onRequest(app);
+onSchedule('every 4 hours', () => {
+	console.log('FCM');
+});*/
+
+
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import axios from 'axios'
+
+onSchedule('every 1 minute', () => {
+	console.log('FCM');
+})
+

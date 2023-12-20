@@ -1,43 +1,39 @@
-import * as admin from 'firebase-admin';
-import db from './db';
-import * as dayjs from 'dayjs';
-import { isEmpty } from 'lodash';
+import { MessagingPayload, getMessaging } from "firebase-admin/messaging";
+import { Firestore, QueryDocumentSnapshot, WriteResult } from 'firebase-admin/firestore';
+import dayjs from 'dayjs';
 
-const payload: admin.messaging.MessagingPayload = {
+const payload: MessagingPayload = {
   notification: {
     title: 'Alternate Side Parking'
   }
 };
-export async function FCM(type?: string, tweet?: any) {
-  if (type === 'scrape' && tweet && tweet.date) {
-    await getImmediateNotifications(tweet);
-  } else {
-    await getCustomNotifications();
-  }
-}
 
-async function getImmediateNotifications(tweet: any) {
-  const isToday = dayjs(tweet.date).isSame(dayjs(), 'day');
-  const query = await db.collection('notifications').where(isToday ? 'today' : 'nextDay', '==', 'immediately').where('type', '==', 'NYC').get();
-  const promise: FirebaseFirestore.QueryDocumentSnapshot[] = [];
+async function getImmediateNotifications(db: Firestore, action: string) {
+  const isToday = action === 'today';
+  const id = isToday ? dayjs().format('YYYYMMDD') : dayjs().add(1, 'day').format('YYYYMMDD');
+  const feedSnap = await db.collection('feed').doc(id).get();
+  if (!feedSnap.exists) return;
+  const { active, text } = feedSnap.data() as Feed;
+  const query = await db.collection('notifications').where(action, '==', 'immediately').where('type', '==', 'NYC').get();
+  const promise: QueryDocumentSnapshot[] = [];
   const tokens: string[] = [];
   query.forEach(snapshot => promise.push(snapshot));
   for (const snapshot of promise) {
     const { exceptionOnly, nextDay, today, token } = snapshot.data();
-    if (payload.notification) payload.notification.body = tweet.text;
-    if (token && !isEmpty(token) && (today === 'immediately' && isToday) || (nextDay === 'immediately' && !isToday)) {
-      if (checkException(exceptionOnly, tweet.active)) {
+    if (payload.notification) payload.notification.body = text;
+    if (token && !token && (today === 'immediately' && isToday) || (nextDay === 'immediately' && !isToday)) {
+      if (checkException(exceptionOnly, active)) {
         tokens.push(token);
       }
     }
   }
 
-  await sendToDevices(tokens, promise);
+ //  await sendToDevices(tokens, promise);
 }
 
-async function getCustomNotifications() {
+async function getCustomNotifications(db: Firestore) {
   const data = await db.collection('feed').orderBy('created', 'desc').limit(1).get();
-  let promise: FirebaseFirestore.QueryDocumentSnapshot[] = [];
+  let promise: QueryDocumentSnapshot[] = [];
   data.forEach(snapshot => promise.push(snapshot));
   let isToday = false;
   let isActive = false;
@@ -56,7 +52,7 @@ async function getCustomNotifications() {
     date = isToday ? `${date} ${todayCustom}` : `${date} ${nextDayCustom}`;
     isActive = dayjs(date).isAfter(dayjs()) && dayjs(date).isBefore(dayjs().add(15, 'minute'));
     if ((today === 'custom' && isToday && isActive) || (nextDay === 'custom' && !isToday && isActive)) {
-      if (token && !isEmpty(token) && checkException(exceptionOnly, isActive)) {
+      if (token && !token && checkException(exceptionOnly, isActive)) {
         tokens.push(token);
       }
     }
@@ -65,12 +61,14 @@ async function getCustomNotifications() {
   await sendToDevices(tokens, promise);
 }
 
-async function sendToDevices(tokens: string[], promise: FirebaseFirestore.QueryDocumentSnapshot[]) {
+async function sendToDevices(tokens: string[], promise: QueryDocumentSnapshot[]) {
   if (tokens.length <= 0) return;
+  const messaging = getMessaging();
+  const messages = tokens.map(token => ({ ...payload, token }));
   console.log(`There are ${promise.length} tokens to send notifications to.`);
-  const response = await admin.messaging().sendToDevice(tokens, payload);  // Limit to 500 devices, will need to optimize later
-  const deadTokens: Promise<FirebaseFirestore.WriteResult>[] = [];
-  response.results.forEach((result, index) => {
+  const { responses } = await messaging.sendAll(messages);  // Limit to 500 devices, will need to optimize later
+  const deadTokens: Promise<WriteResult>[] = [];
+  responses.forEach((result, index) => {
     const error = result.error;
     if (error) {
       console.error('Failure sending notification to', tokens[index], error); // Cleanup the tokens who are not registered anymore.
@@ -86,3 +84,26 @@ async function sendToDevices(tokens: string[], promise: FirebaseFirestore.QueryD
 function checkException(exception: boolean, active: boolean): boolean {
   return exception && active ?  false : true;
 }
+
+interface Notification {
+  exceptionOnly: boolean;
+  nextDay: string;
+  nextDayCustom: string;
+  today: string;
+  todayCustom: string;
+  token: string;
+  type: string;
+}
+
+
+interface Feed {
+  active: boolean;
+  created: Date;
+  date: string;
+  id: string;
+  metered: boolean;
+  reason: string;
+  text: string;
+  type: string;
+}
+export { getImmediateNotifications, getCustomNotifications}

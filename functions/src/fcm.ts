@@ -28,7 +28,7 @@ async function getImmediateNotifications(db: Firestore, action: string) {
     }
   }
 
- //  await sendToDevices(tokens, promise);
+ await sendToDevices(tokens, promise);
 }
 
 async function getCustomNotifications(db: Firestore) {

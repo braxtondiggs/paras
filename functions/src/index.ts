@@ -1,11 +1,13 @@
 import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getRemoteConfig } from "firebase-admin/remote-config";
 import { log, error } from "firebase-functions/logger";
-import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onSchedule, ScheduleOptions } from "firebase-functions/v2/scheduler";
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import axios from 'axios';
 import dayjs from 'dayjs';
+dayjs.extend(customParseFormat)
 
 import { getImmediateNotifications, getCustomNotifications } from './fcm';
 
@@ -20,7 +22,7 @@ const getASPData = async (from?: string, to?: string) => {
 	log('getASPData', fromDate, toDate);
 	const { parameters  } = await config.getTemplate();
 	const APIKEY = (parameters.ASPKEY.defaultValue as any).value;
-	if (!APIKEY) return error('Missing APIKEY');
+	if (!APIKEY) error('Missing APIKEY');
 
 	try {
 		const { data } = await axios.get<IASPResponse>(`https://api.nyc.gov/public/api/GetCalendar?fromdate=${fromDate}&todate=${toDate}`, {
@@ -32,14 +34,14 @@ const getASPData = async (from?: string, to?: string) => {
 		
 		const batch = db.batch();
 		data.days.forEach(({ today_id, items }) => {
-			const item = items.find(({ type, reason }) => type === 'Alternate Side Parking' && reason !== 'Information Not Available');
-			if (!item) return;
-			const { exceptionName, details, status } = item;
+			const item = items.find(({ type, exceptionName: reason, details: text }) => type === 'Alternate Side Parking' && reason !== 'Information Not Available' && !text.includes('Sundays'));
 			const feedRef = db.doc(`feed/${today_id}`);
+			if (item === undefined) return batch.delete(feedRef);
+			const { exceptionName, details, status } = item;
 			batch.set(feedRef, {
 				active: status === Status.Active,
-				created: dayjs().toDate(),
-				date: dayjs(today_id, 'YYYYMMDD').toDate(),
+				created: Timestamp.fromDate(dayjs().toDate()),
+				date: Timestamp.fromDate(dayjs(today_id, 'YYYYMMDD').startOf('day').add(5, 'hour').toDate()),
 				id: today_id,
 				metered: isMetered(details),
 				reason: exceptionName || getReason(details),
@@ -47,7 +49,7 @@ const getASPData = async (from?: string, to?: string) => {
 				type: 'NYC'
 			});
 		});
-		await batch.commit()
+		await batch.commit();
 	} catch (err) {
 		error(err);
 	}
@@ -88,15 +90,13 @@ const upperFirst = (text: string) => {
 	return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
 }
 
-onSchedule('every 4 hours', async () => await getASPData())
-onSchedule('every 1 month', async () => await getASPMonth())
-onSchedule('every 15 minutes', async () => await getCustomNotifications(db))
-onSchedule('30 7 * * *', async () => await getImmediateNotifications(db, 'today'));
-onSchedule('0 16 * * *', async () => await getImmediateNotifications(db, 'nextDay'));
-/*exports.playground = onRequest(async (req, res) => {
-	await sendNotifications();
-	res.send('OK');
-})*/
+const getSchedule = (schedule: string): ScheduleOptions => ({  schedule, timeZone: 'America/New_York' });
+
+exports.getASPData = onSchedule(getSchedule('every 4 hours'), async () => await getASPData())
+exports.getASPMonth = onSchedule(getSchedule('30 19 1 * *'), async () => await getASPMonth())
+exports.getCustomNotifications = onSchedule(getSchedule('every 15 minutes'), async () => await getCustomNotifications(db))
+exports.getNotificationsToday = onSchedule(getSchedule('30 7 * * *'), async () => await getImmediateNotifications(db, 'today'));
+exports.getNotificationsTomorrow = onSchedule(getSchedule('0 16 * * *'), async () => await getImmediateNotifications(db, 'nextDay'));
 
 enum Status {
 	Suspended = 'SUSPENDED',
@@ -111,7 +111,6 @@ interface IASPResponse {
 			exceptionName?: string;
 			details: string;
 			status: Status;
-			reason?: string;
 		}[];
 	}[];
 }

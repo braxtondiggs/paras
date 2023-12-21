@@ -3,6 +3,7 @@ import { ModalDetailComponent } from '../core/components/modal-detail/modal-deta
 import { Feed } from '../core/interface';
 import { FeedService } from '../core/services';
 import dayjs, { Dayjs } from 'dayjs';
+import { lastValueFrom } from 'rxjs';
 import { addIcons } from 'ionicons';
 import { calendarOutline, settingsOutline } from 'ionicons/icons';
 import { IonRouterLink, IonHeader, IonToolbar, IonTitle, IonButton, IonButtons,  IonContent, IonIcon, ModalController, IonDatetime, PickerColumnOption  } from '@ionic/angular/standalone';
@@ -35,6 +36,7 @@ import { HorizontalCalendarComponent } from 'app/core/components/horizontal-cale
 export class HomePage implements AfterViewInit {
   public minDate: string = dayjs().startOf('year').toISOString();
   public maxDate: string = dayjs().endOf('year').toISOString();
+  public selectedDate: string = dayjs().toISOString();
   public items: Feed[] = [];
   public highlightedDates: any[] = [];
   public activeSlide = 0;
@@ -48,21 +50,22 @@ export class HomePage implements AfterViewInit {
   }
 
   async onChange({ detail }: CustomEvent<PickerColumnOption>) {
+    this.selectedDate = dayjs().toISOString(); // force
     const { value } = detail;
     const date = dayjs(value);
     const item = this.items.find((o) => dayjs(o.date.toDate()).isSame(date, 'day')) || dayjs(date.toString());
-    const modalDetail = await this.modal.create({
+    const modal = await this.modal.create({
       component: ModalDetailComponent,
       cssClass: 'fullscreen',
       componentProps: {
         item
       }
     });
-    return await modalDetail.present();
+    return await modal.present();
   }
 
-  ngAfterViewInit(): void {
-    this.getLastDate();
+  async ngAfterViewInit(): Promise<void> {
+    await this.getLastDate();
     this.getData(dayjs(this.minDate), dayjs(this.maxDate));
   }
 
@@ -78,13 +81,13 @@ export class HomePage implements AfterViewInit {
       this.highlightedDates = items.map((o) => ({
         date: dayjs(o.date.toDate()).format('YYYY-MM-DD'),
         backgroundColor: '#f38181',
+        textColor: '#fff'
       }));
     });
   }
 
-  private getLastDate() {
-    this.feed.getLast().subscribe((item) => {
-      this.maxDate = dayjs(item.date.toDate()).endOf('month').subtract(1, 'day').toISOString();  
-    });
+  private async getLastDate() {
+    const { date } = await lastValueFrom(this.feed.getLast());
+    this.maxDate = dayjs(date.toDate()).endOf('month').subtract(1, 'day').toISOString();
   }
 }

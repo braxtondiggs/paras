@@ -34,24 +34,11 @@ ion-datetime::part(calendar-day) {
 }
 
 ion-datetime::part(calendar-day active) {
-  background: transparent;
-  border: 0;
-  color: buttontext;
   &:focus {
     box-shadow: none;
   }
 }
 
-ion-datetime::part(calendar-day today) {
-  background: var(--ion-color-base);
-  color: var(--ion-color-contrast);
-}
-
-@media (prefers-color-scheme: dark) {
-  ion-datetime::part(calendar-day active) {
-    color: var(--ion-color-contrast);
-  }
-}
 
 body.dark {
   .horizontal-container {

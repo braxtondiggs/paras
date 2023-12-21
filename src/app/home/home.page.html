@@ -19,6 +19,7 @@
     <swiper-slide>
       <ion-datetime
         #calendar
+        [value]="selectedDate"
         [min]="minDate"
         [max]="maxDate"
         [highlightedDates]="highlightedDates"

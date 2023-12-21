@@ -36,7 +36,7 @@ import { HorizontalCalendarComponent } from 'app/core/components/horizontal-cale
 export class HomePage implements AfterViewInit {
   public minDate: string = dayjs().startOf('year').toISOString();
   public maxDate: string = dayjs().endOf('year').toISOString();
-  public selectedDate: string = dayjs().toISOString();
+  public selectedDate: string = dayjs().startOf('day').toISOString();
   public items: Feed[] = [];
   public highlightedDates: any[] = [];
   public activeSlide = 0;

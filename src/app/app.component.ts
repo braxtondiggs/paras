@@ -2,7 +2,7 @@ import { Component, EnvironmentInjector, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Analytics, setUserProperties } from '@angular/fire/analytics';
-// import { Performance } from '@angular/fire/performance';
+import { Performance } from '@angular/fire/performance';
 import { Platform, AlertController, IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { PushNotifications, Token } from '@capacitor/push-notifications';
 import { Network } from '@capacitor/network';
@@ -18,7 +18,7 @@ import { filter, map } from 'rxjs/operators';
 })
 export class AppComponent {
   private analytics: Analytics = inject(Analytics);
-  // private _performance: Performance = inject(Performance);
+  private _performance: Performance = inject(Performance);
 
   constructor(
     private alert: AlertController,

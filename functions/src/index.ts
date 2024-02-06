@@ -94,7 +94,7 @@ const getSchedule = (schedule: string): ScheduleOptions => ({  schedule, timeZon
 
 exports.getASPData = onSchedule(getSchedule('every 4 hours'), async () => await getASPData())
 exports.getASPMonth = onSchedule(getSchedule('30 19 1 * *'), async () => await getASPMonth())
-exports.getCustomNotifications = onSchedule(getSchedule('every 15 minutes'), async () => await getCustomNotifications(db))
+exports.getCustomNotifications = onSchedule(getSchedule('every 15 minutes'), async () => await getCustomNotifications(db));
 exports.getNotificationsToday = onSchedule(getSchedule('30 7 * * *'), async () => await getImmediateNotifications(db, 'today'));
 exports.getNotificationsTomorrow = onSchedule(getSchedule('0 16 * * *'), async () => await getImmediateNotifications(db, 'nextDay'));
 

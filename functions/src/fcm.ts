@@ -20,15 +20,14 @@ async function getImmediateNotifications(db: Firestore, action: string) {
   query.forEach(snapshot => promise.push(snapshot));
   for (const snapshot of promise) {
     const { exceptionOnly, nextDay, today, token } = snapshot.data();
-    if (payload.notification) payload.notification.body = text;
-    if (token && !token && (today === 'immediately' && isToday) || (nextDay === 'immediately' && !isToday)) {
+    if (token && ((today === 'immediately' && isToday) || (nextDay === 'immediately' && !isToday))) {
       if (checkException(exceptionOnly, active)) {
         tokens.push(token);
       }
     }
   }
 
- await sendToDevices(tokens, promise);
+  await sendToDevices(tokens, promise);
 }
 
 async function getCustomNotifications(db: Firestore) {
@@ -39,7 +38,7 @@ async function getCustomNotifications(db: Firestore) {
   let isActive = false;
   for (const snapshot of promise) {
     const { date, text } = snapshot.data();
-    if (payload.notification) payload.notification.body = text;
+    if (payload.notification) payload.notification.body = !isToday  ? text.replaceAll(/\./g, ' tomorrow.') : text;
     isToday = dayjs(date.toDate()).isSame(dayjs(), 'day');
   }
   promise = []; // reset
@@ -52,7 +51,7 @@ async function getCustomNotifications(db: Firestore) {
     date = isToday ? `${date} ${todayCustom}` : `${date} ${nextDayCustom}`;
     isActive = dayjs(date).isAfter(dayjs()) && dayjs(date).isBefore(dayjs().add(15, 'minute'));
     if ((today === 'custom' && isToday && isActive) || (nextDay === 'custom' && !isToday && isActive)) {
-      if (token && !token && checkException(exceptionOnly, isActive)) {
+      if (token && checkException(exceptionOnly, isActive)) {
         tokens.push(token);
       }
     }

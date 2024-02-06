@@ -3,7 +3,7 @@
   "scripts": {
     "lint": "tslint --project tsconfig.json",
     "build": "tsc",
-    "start": "tsc --watch & firebase emulators:start",
+    "start": "tsc --watch & firebase emulators:start --import=./imports",
     "deploy": "npm run build && firebase deploy --only functions",
     "logs": "firebase functions:log"
   },

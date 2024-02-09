@@ -17,6 +17,7 @@ async function getImmediateNotifications(db: Firestore, action: string) {
   const query = await db.collection('notifications').where(action, '==', 'immediately').where('type', '==', 'NYC').get();
   const promise: QueryDocumentSnapshot[] = [];
   const tokens: string[] = [];
+  if (payload.notification) payload.notification.body = !isToday  ? text.replaceAll(/\./g, ' tomorrow.') : text;
   query.forEach(snapshot => promise.push(snapshot));
   for (const snapshot of promise) {
     const { exceptionOnly, nextDay, today, token } = snapshot.data();

@@ -33,12 +33,12 @@ export class CardDetailComponent implements OnChanges {
   @Input() item?: Feed | Dayjs;
 
   constructor() {
+    dayjs.extend(relativeTime);
+    dayjs.extend(advancedFormat);
     addIcons({ closeCircleOutline, checkmarkCircleOutline });
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    dayjs.extend(relativeTime);
-    dayjs.extend(advancedFormat);
     const currentItem: SimpleChange = changes['item'];
     if (currentItem.currentValue) {
       const data: Feed | Dayjs = changes['item'].currentValue;

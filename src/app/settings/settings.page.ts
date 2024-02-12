@@ -298,8 +298,8 @@ export class SettingsPage implements OnInit {
       columns: [
         {
           name: 'hours',
-          selectedIndex: [...Array(13).keys()].map(k => k + 1).findIndex(o => o == hour),
-          options: [...Array(13).keys()].map(k => k + 1).map(o => ({ text: o.toString() }))
+          selectedIndex: [...Array(12).keys()].map(k => k + 1).findIndex(o => o == hour),
+          options: [...Array(12).keys()].map(k => k + 1).map(o => ({ text: o.toString() }))
         },
         {
           name: 'minutes',
